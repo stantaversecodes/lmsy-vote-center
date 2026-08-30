@@ -1,0 +1,120 @@
+:root {
+  /* ================================
+     LMSY BRAND COLORS
+  ================================= */
+
+  /* LOOKMHEE — YELLOW */
+
+  --color-lookmhee: #E3B33E;
+  --color-lookmhee-soft: #FFF3D6;
+  --color-lookmhee-button: #F4D77E;
+  --color-lookmhee-button-hover: #EBC85D;
+  --color-lookmhee-deep: #A97813;
+
+
+  /* SONYA — BLUE */
+
+  --color-sonya: #4FA9E3;
+  --color-sonya-soft: #E8F5FD;
+  --color-sonya-button: #9DD3F2;
+  --color-sonya-button-hover: #7CC2EA;
+  --color-sonya-deep: #1F6FA8;
+
+
+  /* ================================
+     LMSY GRADIENTS
+  ================================= */
+
+  --gradient-lmsy:
+    linear-gradient(
+      120deg,
+      #F3C85A 0%,
+      #F8DE95 24%,
+      #F8F4E9 46%,
+      #EEF7FC 58%,
+      #B8DEF3 76%,
+      #67B7E8 100%
+    );
+
+  --gradient-lmsy-soft:
+    linear-gradient(
+      120deg,
+      rgba(227, 179, 62, 0.20) 0%,
+      rgba(255, 243, 214, 0.70) 28%,
+      rgba(255, 255, 255, 0.92) 50%,
+      rgba(232, 245, 253, 0.72) 72%,
+      rgba(79, 169, 227, 0.20) 100%
+    );
+
+
+  /* ================================
+     NEUTRAL COLORS
+  ================================= */
+
+  --color-background: #FAFAFA;
+  --color-surface: #FFFFFF;
+
+  --color-text: #1D1D1F;
+  --color-text-soft: #6E6E73;
+  --color-text-light: #9A9A9F;
+
+  --color-border: rgba(29, 29, 31, 0.08);
+  --color-border-strong: rgba(29, 29, 31, 0.16);
+
+  --color-danger: #C24E4E;
+  --color-success: #3A9B65;
+
+
+  /* ================================
+     TYPOGRAPHY
+  ================================= */
+
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 3rem;
+
+
+  /* ================================
+     BORDER RADIUS
+  ================================= */
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+
+  /* ================================
+     SHADOWS
+  ================================= */
+
+  --shadow-sm: 0 8px 20px -12px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 20px 45px -24px rgba(0, 0, 0, 0.18);
+  --shadow-lg: 0 28px 60px -28px rgba(0, 0, 0, 0.22);
+
+
+  /* ================================
+     LAYOUT
+  ================================= */
+
+  --page-width: 1080px;
+  --page-padding: 28px;
+
+  --section-spacing: 80px;
+
+
+  /* ================================
+     TRANSITIONS
+  ================================= */
+
+  --transition-fast: 150ms ease;
+  --transition-base: 220ms ease;
+}

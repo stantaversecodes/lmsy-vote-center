@@ -1,0 +1,771 @@
+/* ================================
+   ADMIN MODAL
+================================= */
+
+.admin-modal[hidden] {
+  display: none;
+}
+
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.5rem;
+}
+
+
+/* ================================
+   BACKDROP
+================================= */
+
+.admin-modal__backdrop {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(29, 29, 31, 0.42);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+
+/* ================================
+   DIALOG
+================================= */
+
+.admin-modal__dialog {
+  position: relative;
+  z-index: 1;
+
+  width: min(100%, 440px);
+
+  padding: 2rem;
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+
+  box-shadow: var(--shadow-lg);
+}
+
+
+/* ================================
+   CLOSE BUTTON
+================================= */
+
+.admin-modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  background: var(--color-background);
+  color: var(--color-text-soft);
+
+  font-size: 1.4rem;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.admin-modal__close:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.admin-modal__close:active {
+  transform: scale(0.94);
+}
+
+
+/* ================================
+   HEADER
+================================= */
+
+.admin-modal__header {
+  margin-bottom: 1.8rem;
+  padding-right: 2rem;
+}
+
+.admin-modal__title {
+  margin-bottom: 0.5rem;
+
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.admin-modal__description {
+  margin-bottom: 0;
+
+  color: var(--color-text-soft);
+
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+
+/* ================================
+   LOGIN FORM
+================================= */
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1.2rem;
+}
+
+.admin-login-form__field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.5rem;
+
+  color: var(--color-text);
+
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.admin-login-form__field input {
+  width: 100%;
+
+  padding: 0.9rem 1rem;
+
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+
+  background: var(--color-background);
+  color: var(--color-text);
+
+  outline: none;
+
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.admin-login-form__field input:focus {
+  background: var(--color-surface);
+
+  border-color: var(--color-sonya);
+
+  box-shadow:
+    0 0 0 4px rgba(79, 169, 227, 0.12);
+}
+
+
+/* ================================
+   MESSAGE
+================================= */
+
+.admin-login-form__message {
+  min-height: 1.2rem;
+
+  margin: 0;
+
+  color: var(--color-danger);
+
+  font-size: var(--font-size-sm);
+}
+
+
+/* ================================
+   SUBMIT BUTTON
+================================= */
+
+.admin-login-form__submit {
+  width: 100%;
+
+  margin-top: 0.2rem;
+
+  background: var(--gradient-lmsy);
+  color: var(--color-text);
+}
+
+.admin-login-form__submit:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* ================================
+   ADMIN PANEL
+================================= */
+
+.admin-panel[hidden] {
+  display: none;
+}
+
+.admin-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+
+  width: 100%;
+  height: 100vh;
+
+  background: rgba(29, 29, 31, 0.35);
+}
+
+.admin-panel__backdrop {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(29, 29, 31, 0.28);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.admin-panel__shell {
+  position: relative;
+  z-index: 1;
+
+  width: min(1200px, calc(100% - 40px));
+  height: calc(100vh - 40px);
+
+  margin: 20px auto;
+
+  display: grid;
+  grid-template-columns: 230px 1fr;
+
+  overflow: hidden;
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+
+  box-shadow: var(--shadow-lg);
+}
+
+
+/* ================================
+   ADMIN SIDEBAR
+================================= */
+
+.admin-panel__sidebar {
+  padding: 1.8rem 1.2rem;
+
+  background: var(--color-background);
+
+  border-right: 1px solid var(--color-border);
+}
+
+.admin-panel__brand {
+  display: flex;
+  align-items: center;
+
+  margin-bottom: 2rem;
+
+  font-weight: 800;
+}
+
+.admin-panel__nav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.45rem;
+}
+
+.admin-panel__nav-item {
+  width: 100%;
+
+  padding: 0.8rem 1rem;
+
+  border: 0;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: var(--color-text-soft);
+
+  font-weight: 600;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.admin-panel__nav-item:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.admin-panel__nav-item.is-active {
+  background: var(--gradient-lmsy-soft);
+  color: var(--color-text);
+}
+
+
+/* ================================
+   ADMIN CONTENT
+================================= */
+
+.admin-panel__content {
+  min-width: 0;
+
+  padding: 2rem;
+
+  overflow-y: auto;
+}
+
+.admin-panel__topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 2rem;
+
+  padding-bottom: 1.5rem;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-panel__title {
+  margin: 0;
+
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.admin-panel__close {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  background: var(--color-background);
+  color: var(--color-text-soft);
+
+  font-size: 1.4rem;
+
+  cursor: pointer;
+}
+
+.admin-panel__close:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.admin-panel__body {
+  padding-top: 2rem;
+}
+
+.admin-panel__placeholder {
+  margin: 0;
+
+  color: var(--color-text-soft);
+}
+
+/* ================================
+   ADMIN SECTION HEADER
+================================= */
+
+.admin-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+
+  margin-bottom: 2rem;
+}
+
+.admin-section-header__title {
+  margin-bottom: 0.45rem;
+
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.admin-section-header__description {
+  margin: 0;
+
+  color: var(--color-text-soft);
+
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+
+/* ================================
+   ADMIN FORM VIEW
+================================= */
+
+.admin-form-view {
+  width: 100%;
+}
+
+.admin-form-view__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+
+  margin-bottom: 2rem;
+}
+
+
+/* ================================
+   VOTING FORM
+================================= */
+
+.admin-voting-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 1.25rem 1.5rem;
+
+  max-width: 900px;
+
+  padding: 1.8rem;
+
+  background: var(--color-background);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-voting-form label {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.55rem;
+
+  color: var(--color-text);
+
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.admin-voting-form input,
+.admin-voting-form select {
+  width: 100%;
+
+  min-height: 46px;
+
+  padding: 0.75rem 0.9rem;
+
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+  color: var(--color-text);
+
+  outline: none;
+
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.admin-voting-form input:focus,
+.admin-voting-form select:focus {
+  border-color: var(--color-sonya);
+
+  box-shadow:
+    0 0 0 4px rgba(79, 169, 227, 0.12);
+}
+
+.admin-voting-form input::placeholder {
+  color: var(--color-text-light);
+}
+
+
+/* ================================
+   ACTIVE CHECKBOX
+================================= */
+
+.admin-voting-form label:has(input[type='checkbox']) {
+  flex-direction: row;
+  align-items: center;
+
+  align-self: end;
+
+  min-height: 46px;
+
+  padding: 0.75rem 1rem;
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.admin-voting-form input[type='checkbox'] {
+  width: 18px;
+  min-height: 18px;
+  height: 18px;
+
+  margin: 0;
+
+  accent-color: var(--color-sonya);
+}
+
+
+/* ================================
+   SAVE BUTTON
+================================= */
+
+.admin-voting-form > .btn {
+  grid-column: 1 / -1;
+
+  justify-self: start;
+
+  min-width: 160px;
+
+  margin-top: 0.5rem;
+
+  background: var(--gradient-lmsy);
+  color: var(--color-text);
+}
+
+.admin-voting-form > .btn:hover {
+  box-shadow: var(--shadow-md);
+}
+
+
+/* ================================
+   RESPONSIVE FORM
+================================= */
+
+@media (max-width: 760px) {
+  .admin-form-view__header,
+  .admin-section-header {
+    flex-direction: column;
+  }
+
+  .admin-voting-form {
+    grid-template-columns: 1fr;
+
+    padding: 1.25rem;
+  }
+
+  .admin-voting-form > .btn {
+    grid-column: 1;
+    width: 100%;
+  }
+}
+
+/* ================================
+   ADMIN VOTING LIST
+================================= */
+
+#adminVotingList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.admin-voting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+
+  padding: 1.1rem 1.2rem;
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-voting-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  min-width: 0;
+}
+
+.admin-voting-item__top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.admin-voting-item__event {
+  color: var(--color-text);
+
+  font-size: var(--font-size-base);
+  font-weight: 800;
+}
+
+.admin-voting-item__status {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.28rem 0.6rem;
+
+  background: rgba(58, 155, 101, 0.12);
+  color: var(--color-success);
+
+  border-radius: var(--radius-pill);
+
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.admin-voting-item__platform {
+  color: var(--color-text-soft);
+
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.admin-voting-item__meta {
+  color: var(--color-text-light);
+
+  font-size: var(--font-size-xs);
+}
+
+.admin-voting-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  flex-shrink: 0;
+}
+
+.admin-voting-item__actions .btn {
+  padding: 0.65rem 1rem;
+
+  font-size: var(--font-size-sm);
+}
+
+
+/* ================================
+   VOTING LIST RESPONSIVE
+================================= */
+
+@media (max-width: 760px) {
+  .admin-voting-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-voting-item__actions {
+    width: 100%;
+  }
+
+  .admin-voting-item__actions .btn {
+    flex: 1;
+  }
+}
+
+/* ================================
+   SUPPORT ADMIN GROUPS
+================================= */
+
+.admin-support-fund {
+  margin-bottom: 2rem;
+
+  padding: 1rem;
+
+  background: rgba(79, 169, 227, 0.035);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+
+/* ================================
+   SUPPORT FUND MAIN CARD
+================================= */
+
+.admin-support-fund__main {
+  margin-bottom: 1rem;
+}
+
+
+/* ================================
+   DONATION LINKS AREA
+================================= */
+
+.admin-support-links {
+  margin-top: 1rem;
+
+  padding: 1rem;
+
+  background: rgba(255, 255, 255, 0.72);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+
+.admin-support-links__title {
+  display: block;
+
+  margin-bottom: 0.8rem;
+
+  color: var(--color-text-soft);
+
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+
+  letter-spacing: 0.06em;
+}
+
+
+/* ================================
+   DONATION LINK ITEM
+================================= */
+
+.admin-support-link {
+  margin-bottom: 0.7rem;
+
+  background: var(--color-surface);
+}
+
+.admin-support-link:last-child {
+  margin-bottom: 0;
+}
+
+
+/* ================================
+   EMPTY LINKS
+================================= */
+
+.admin-support-links__empty {
+  margin: 0;
+
+  color: var(--color-text-light);
+
+  font-size: var(--font-size-sm);
+}
