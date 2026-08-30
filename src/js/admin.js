@@ -1,5 +1,25 @@
 import { supabase } from './supabase.js';
 
+// ================================
+// ADMIN ACCESS VERIFICATION
+// ================================
+
+export async function verifyAdminAccess(password) {
+  const { data, error } = await supabase.functions.invoke(
+    'smooth-responder',
+    {
+      body: {
+        password,
+      },
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
 
 // ================================
 // VOTING
@@ -553,3 +573,86 @@ export async function deleteDonationLink(id) {
   }
 }
 
+// ================================
+// WATCH & RESULTS
+// ================================
+
+export async function getWatchLinks() {
+  const { data, error } = await supabase
+    .from('lmsy_watch_links')
+    .select('*')
+    .order('sort_order', {
+      ascending: true,
+    })
+    .order('created_at', {
+      ascending: true,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}
+
+export async function getActiveWatchLinks() {
+  const { data, error } = await supabase
+    .from('lmsy_watch_links')
+    .select('*')
+    .eq('active', true)
+    .order('sort_order', {
+      ascending: true,
+    })
+    .order('created_at', {
+      ascending: true,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}
+
+export async function createWatchLink(watchData) {
+  const { data, error } = await supabase
+    .from('lmsy_watch_links')
+    .insert(watchData)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updateWatchLink(
+  watchId,
+  watchData
+) {
+  const { data, error } = await supabase
+    .from('lmsy_watch_links')
+    .update(watchData)
+    .eq('id', watchId)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function deleteWatchLink(watchId) {
+  const { error } = await supabase
+    .from('lmsy_watch_links')
+    .delete()
+    .eq('id', watchId);
+
+  if (error) {
+    throw error;
+  }
+}

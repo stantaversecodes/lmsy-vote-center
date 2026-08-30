@@ -150,7 +150,8 @@
   font-weight: 600;
 }
 
-.admin-login-form__field input {
+.admin-login-form__field input,
+.admin-login-form__field select {
   width: 100%;
 
   padding: 0.9rem 1rem;
@@ -160,6 +161,8 @@
 
   background: var(--color-background);
   color: var(--color-text);
+
+  font: inherit;
 
   outline: none;
 
@@ -768,4 +771,544 @@
   color: var(--color-text-light);
 
   font-size: var(--font-size-sm);
+}
+
+.admin-login-success .btn {
+  margin-top: 1rem;
+}
+
+/* ================================
+   ADMIN AUTH OPTIONS
+================================= */
+
+.admin-access-options {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+
+  gap: 0.75rem;
+
+  margin-top: 1.5rem;
+}
+
+.admin-access-options .btn {
+  width: 100%;
+
+  justify-content: center;
+}
+
+.admin-auth-link {
+  align-self: center;
+
+  margin-top: 0.35rem;
+  padding: 0.25rem;
+
+  background: transparent;
+
+  border: 0;
+
+  color: var(--color-text-soft);
+
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  cursor: pointer;
+
+  transition: color var(--transition-fast);
+}
+
+.admin-auth-link:hover {
+  color: var(--color-text);
+}
+
+.admin-login-success__actions {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.75rem;
+
+  margin-top: 1rem;
+}
+
+.admin-login-success__actions .btn {
+  width: 100%;
+
+  justify-content: center;
+}
+
+/* ================================
+   ADMIN PANEL IDENTITY
+================================= */
+
+.admin-panel__sidebar-header {
+  margin-bottom: 2rem;
+}
+
+.admin-panel__brand {
+  margin-bottom: 0.75rem;
+}
+
+.admin-panel__identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 0.45rem;
+}
+
+.admin-panel__identity-name {
+  color: var(--color-text-soft);
+
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.admin-panel__role {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.25rem 0.55rem;
+
+  background: var(--gradient-lmsy-soft);
+  color: var(--color-text);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+
+/* ================================
+   ADMIN PANEL MOBILE
+================================= */
+
+@media (max-width: 760px) {
+
+  .admin-panel__shell {
+    width: calc(100% - 16px);
+    height: calc(100dvh - 16px);
+
+    margin: 8px auto;
+
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+
+    border-radius: var(--radius-lg);
+  }
+
+
+  /* SIDEBAR BECOMES TOP NAV */
+
+  .admin-panel__sidebar {
+    min-width: 0;
+
+    padding: 1rem 1rem 0.85rem;
+
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .admin-panel__sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    margin-bottom: 0.9rem;
+  }
+
+  .admin-panel__brand {
+    flex-shrink: 0;
+
+    margin-bottom: 0;
+
+    font-size: 0.95rem;
+  }
+
+  .admin-panel__identity {
+    justify-content: flex-end;
+
+    min-width: 0;
+  }
+
+  .admin-panel__identity-name {
+    max-width: 100px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+
+  /* HORIZONTAL ADMIN NAVIGATION */
+
+  .admin-panel__nav {
+    width: 100%;
+
+    flex-direction: row;
+    align-items: center;
+
+    gap: 0.45rem;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding-bottom: 0.15rem;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-panel__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-panel__nav-item {
+    width: auto;
+
+    flex: 0 0 auto;
+
+    padding: 0.65rem 0.85rem;
+
+    border-radius: var(--radius-pill);
+
+    font-size: 0.78rem;
+
+    text-align: center;
+
+    white-space: nowrap;
+  }
+
+
+  /* MAIN CONTENT */
+
+  .admin-panel__content {
+    min-height: 0;
+
+    padding: 1.25rem;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .admin-panel__topbar {
+    align-items: center;
+
+    gap: 1rem;
+
+    padding-bottom: 1rem;
+  }
+
+  .admin-panel__topbar .eyebrow {
+    font-size: 0.68rem;
+  }
+
+  .admin-panel__title {
+    font-size: 1.65rem;
+  }
+
+  .admin-panel__close {
+    width: 36px;
+    height: 36px;
+
+    flex-shrink: 0;
+  }
+
+  .admin-panel__body {
+    padding-top: 1.25rem;
+  }
+
+
+  /* SECTION HEADERS */
+
+  .admin-section-header,
+  .admin-form-view__header {
+    width: 100%;
+
+    gap: 1rem;
+
+    margin-bottom: 1.4rem;
+  }
+
+  .admin-section-header > .btn,
+  .admin-form-view__header > .btn {
+    width: 100%;
+
+    justify-content: center;
+  }
+
+
+  /* FORMS */
+
+  .admin-voting-form {
+    width: 100%;
+    max-width: none;
+
+    padding: 1rem;
+
+    gap: 1rem;
+
+    border-radius: var(--radius-lg);
+  }
+
+
+  /* LIST CARDS */
+
+  .admin-voting-item {
+    width: 100%;
+
+    padding: 1rem;
+
+    gap: 1rem;
+  }
+
+  .admin-voting-item__actions {
+    flex-direction: column;
+  }
+
+  .admin-voting-item__actions .btn {
+    width: 100%;
+  }
+
+
+  /* SUPPORT */
+
+  .admin-support-fund {
+    padding: 0.8rem;
+
+    border-radius: var(--radius-lg);
+  }
+
+  .admin-support-links {
+    padding: 0.8rem;
+  }
+}
+
+
+/* ================================
+   VERY SMALL PHONES
+================================= */
+
+@media (max-width: 420px) {
+
+  .admin-panel__shell {
+    width: calc(100% - 10px);
+    height: calc(100dvh - 10px);
+
+    margin: 5px auto;
+  }
+
+  .admin-panel__sidebar {
+    padding-inline: 0.85rem;
+  }
+
+  .admin-panel__content {
+    padding: 1rem;
+  }
+
+  .admin-panel__identity-name {
+    display: none;
+  }
+
+  .admin-panel__role {
+    font-size: 0.64rem;
+  }
+
+  .admin-panel__nav-item {
+    padding: 0.58rem 0.75rem;
+
+    font-size: 0.74rem;
+  }
+
+  .admin-panel__title {
+    font-size: 1.5rem;
+  }
+}
+
+/* ================================
+   ADMIN CANCEL BUTTON
+================================= */
+
+.admin-form-view__header .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.4rem;
+
+  padding: 0.7rem 1rem;
+
+  background: #fff7f7;
+  color: #9a5f5f;
+
+  border: 1px solid #f0d6d6;
+
+  font-weight: 700;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.admin-form-view__header .btn-secondary:hover {
+  background: #fff0f0;
+  color: #854f4f;
+
+  border-color: #e8c4c4;
+
+  box-shadow: var(--shadow-md);
+}
+
+.admin-form-view__header .btn-secondary:active {
+  transform: scale(0.97);
+}
+
+/* ================================
+   ARTISTS & CONTENT SPACING
+================================= */
+
+.admin-content-group {
+  margin-top: 2rem;
+}
+
+.admin-content-group + .admin-content-group {
+  margin-top: 2.5rem;
+}
+
+.admin-content-group__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  margin-bottom: 1.25rem;
+}
+
+.admin-content-group__header h4 {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.admin-content-group__header .admin-section-header__description {
+  margin-top: 0.5rem;
+}
+
+
+/* ================================
+   ARTIST / CONTENT CARDS
+================================= */
+
+.admin-content-group .admin-voting-item {
+  padding: 1.25rem 1.35rem;
+
+  background:
+    linear-gradient(
+      120deg,
+      #fffaf0 0%,
+      #ffffff 48%,
+      #f3f9fd 100%
+    );
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-content-group .admin-voting-item + .admin-voting-item {
+  margin-top: 0.85rem;
+}
+
+.admin-content-group .admin-voting-item__info {
+  gap: 0.4rem;
+}
+
+.admin-content-group .admin-voting-item__top {
+  margin-bottom: 0.25rem;
+}
+
+
+/* ================================
+   STATUS
+================================= */
+
+.admin-content-group .admin-voting-item__status {
+  background: #e7f6ec;
+  color: #2f8f5b;
+  border: 1px solid #cfead9;
+}
+
+.admin-content-group .admin-voting-item__status.is-inactive {
+  background: #fdecec;
+  color: #b85c5c;
+  border: 1px solid #f3d0d0;
+}
+
+
+/* ================================
+   CARD ACTIONS
+================================= */
+
+.admin-content-group .admin-voting-item__actions {
+  gap: 0.55rem;
+}
+
+.admin-content-group .admin-voting-item__actions .btn-secondary {
+  background:
+    linear-gradient(
+      120deg,
+      #fff8e8 0%,
+      #ffffff 50%,
+      #edf7fc 100%
+    );
+
+  border-color: var(--color-border);
+}
+
+
+/* ================================
+   CONTENT AREA LABEL
+================================= */
+
+.admin-content-group .admin-voting-item__platform {
+  color: var(--color-text-soft);
+
+  font-weight: 700;
+}
+
+.admin-content-group .admin-voting-item__meta {
+  line-height: 1.55;
+}
+
+
+/* ================================
+   ADD CONTENT BUTTON
+================================= */
+
+#addContentButton {
+  margin-top: 0.85rem;
+
+  background:
+    linear-gradient(
+      120deg,
+      #fff1c9 0%,
+      #fffaf0 45%,
+      #edf7fc 100%
+    );
+
+  border-color: rgba(79, 169, 227, 0.16);
 }

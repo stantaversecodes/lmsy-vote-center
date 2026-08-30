@@ -5,6 +5,11 @@ import '../styles/admin.css';
 import {
   loginAdmin,
   getCurrentAdminSession,
+  createAdminAccount,
+  logoutAdmin,
+  sendAdminPasswordReset,
+  updateAdminPassword,
+  listenForAdminPasswordRecovery,
 } from './auth.js';
 
 import {
@@ -41,6 +46,12 @@ import {
   createDonationLink,
   updateDonationLink,
   deleteDonationLink,
+  verifyAdminAccess,
+  getWatchLinks,
+  getActiveWatchLinks,
+  createWatchLink,
+  updateWatchLink,
+  deleteWatchLink,
 } from './admin.js';
 
 
@@ -375,7 +386,7 @@ document.querySelector('#app').innerHTML = `
   </div>
 </section>
 
-   <!-- ================================
+  <!-- ================================
      WATCH & RESULTS
 ================================= -->
 
@@ -407,76 +418,13 @@ document.querySelector('#app').innerHTML = `
       Find official streams, performances, appearances and voting results in one place.
     </p>
 
-
-    <div class="watch-grid">
-
-      <article class="watch-card">
-
-        <div class="watch-card__media">
-          Thumbnail
-        </div>
-
-        <div class="watch-card__content">
-
-          <span class="watch-card__type">
-            Live Stream
-          </span>
-
-          <h3 class="watch-card__title">
-            Example Live Event
-          </h3>
-
-          <p class="watch-card__description">
-            Watch an official LMSY appearance or live event.
-          </p>
-
-          <a
-            class="btn btn-primary"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Watch
-          </a>
-
-        </div>
-
-      </article>
-
-
-      <article class="watch-card">
-
-        <div class="watch-card__media">
-          Thumbnail
-        </div>
-
-        <div class="watch-card__content">
-
-          <span class="watch-card__type">
-            Results
-          </span>
-
-          <h3 class="watch-card__title">
-            Example Voting Results
-          </h3>
-
-          <p class="watch-card__description">
-            View the latest voting results and campaign outcomes.
-          </p>
-
-          <a
-            class="btn btn-secondary"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View Results
-          </a>
-
-        </div>
-
-      </article>
-
+    <div
+      class="watch-grid"
+      id="publicWatchGrid"
+    >
+      <p class="vote-empty__description">
+        Loading Watch & Results...
+      </p>
     </div>
 
   </div>
@@ -586,71 +534,69 @@ document.querySelector('#app').innerHTML = `
 
 
   <!-- ================================
-       ADMIN LOGIN MODAL
-  ================================= -->
+     ADMIN ACCESS MODAL
+================================= -->
 
-  <div class="admin-modal" id="adminModal" hidden>
+<div class="admin-modal" id="adminModal" hidden>
+
+  <div
+    class="admin-modal__backdrop"
+    data-close-admin-modal
+  ></div>
+
+  <div class="admin-modal__dialog">
+
+    <button
+      class="admin-modal__close"
+      type="button"
+      aria-label="Close admin access"
+      data-close-admin-modal
+    >
+      ×
+    </button>
+
+    <div class="admin-modal__header">
+
+      <span class="eyebrow">
+        ADMIN ACCESS
+      </span>
+
+      <h2 class="admin-modal__title">
+        Restricted Area
+      </h2>
+
+      <p class="admin-modal__description">
+        This section is exclusively for LMSY Vote Center
+        administrators. Voters do not need an account to use
+        the site.
+      </p>
+
+      <p class="admin-modal__description">
+        If you are an administrator, please enter the admin
+        access password to continue.
+      </p>
+
+    </div>
 
     <div
-      class="admin-modal__backdrop"
-      data-close-admin-modal
-    ></div>
-
-    <div class="admin-modal__dialog">
-
-      <button
-        class="admin-modal__close"
-        type="button"
-        aria-label="Close admin login"
-        data-close-admin-modal
-      >
-        ×
-      </button>
-
-      <div class="admin-modal__header">
-
-        <span class="eyebrow">
-          ADMIN ACCESS
-        </span>
-
-        <h2 class="admin-modal__title">
-          Welcome back
-        </h2>
-
-        <p class="admin-modal__description">
-          Sign in to manage the LMSY Voting Center.
-        </p>
-
-      </div>
+      class="admin-auth-content"
+      id="adminAuthContent"
+    >
 
       <form
         class="admin-login-form"
-        id="adminLoginForm"
+        id="adminAccessForm"
       >
 
         <label class="admin-login-form__field">
 
-          <span>Email</span>
-
-          <input
-            type="email"
-            id="adminEmail"
-            name="email"
-            autocomplete="email"
-            required
-          />
-
-        </label>
-
-        <label class="admin-login-form__field">
-
-          <span>Password</span>
+          <span>Admin Access Password</span>
 
           <input
             type="password"
-            id="adminPassword"
-            name="password"
-            autocomplete="current-password"
+            id="adminAccessPassword"
+            name="access-password"
+            autocomplete="off"
             required
           />
 
@@ -658,7 +604,7 @@ document.querySelector('#app').innerHTML = `
 
         <p
           class="admin-login-form__message"
-          id="adminLoginMessage"
+          id="adminAccessMessage"
           aria-live="polite"
         ></p>
 
@@ -666,7 +612,7 @@ document.querySelector('#app').innerHTML = `
           class="btn btn-primary admin-login-form__submit"
           type="submit"
         >
-          Sign In
+          Continue
         </button>
 
       </form>
@@ -675,6 +621,7 @@ document.querySelector('#app').innerHTML = `
 
   </div>
 
+</div>
 
   <!-- ================================
        ADMIN PANEL
@@ -688,12 +635,32 @@ document.querySelector('#app').innerHTML = `
 
       <aside class="admin-panel__sidebar">
 
-        <div class="admin-panel__brand">
-          <span class="navbar__brand-lm">LM</span>
-          <span class="navbar__brand-heart">♥</span>
-          <span class="navbar__brand-sy">SY</span>
-          <span class="navbar__brand-name">Admin</span>
-        </div>
+        <div class="admin-panel__sidebar-header">
+
+  <div class="admin-panel__brand">
+    <span class="navbar__brand-lm">LM</span>
+    <span class="navbar__brand-heart">♥</span>
+    <span class="navbar__brand-sy">SY</span>
+    <span class="navbar__brand-name">Admin</span>
+  </div>
+
+  <div class="admin-panel__identity">
+    <span
+      class="admin-panel__identity-name"
+      id="adminPanelUserName"
+    >
+      Admin
+    </span>
+
+    <span
+      class="admin-panel__role"
+      id="adminPanelUserRole"
+    >
+      Admin
+    </span>
+  </div>
+
+</div>
 
 
         <nav class="admin-panel__nav">
@@ -840,29 +807,56 @@ closeAdminPanelButton.addEventListener('click', () => {
 
 
 // ================================
-// ADMIN LOGIN
+// ADMIN ACCESS
 // ================================
 
-const adminLoginForm =
-  document.querySelector('#adminLoginForm');
+const adminAccessForm =
+  document.querySelector('#adminAccessForm');
 
-const adminEmail =
-  document.querySelector('#adminEmail');
+const adminAccessPassword =
+  document.querySelector('#adminAccessPassword');
 
-const adminPassword =
-  document.querySelector('#adminPassword');
+const adminAccessMessage =
+  document.querySelector('#adminAccessMessage');
 
-const adminLoginMessage =
-  document.querySelector('#adminLoginMessage');
+const adminAuthContent =
+  document.querySelector('#adminAuthContent');
 
 const adminModalHeader =
   document.querySelector('.admin-modal__header');
 
+let verifiedAdminAccessPassword = '';
+
+function updateAdminPanelIdentity(admin) {
+  const nameElement =
+    document.querySelector('#adminPanelUserName');
+
+  const roleElement =
+    document.querySelector('#adminPanelUserRole');
+
+  if (!nameElement || !roleElement || !admin) {
+    return;
+  }
+
+  nameElement.textContent =
+    admin.display_name || 'Admin';
+
+  const roleLabels = {
+    developer: 'Developer',
+    admin: 'Admin',
+    content_manager: 'Content Manager',
+  };
+
+  roleElement.textContent =
+    roleLabels[admin.role] || admin.role;
+}
 
 function showAdminWelcome(admin) {
   adminModalHeader.hidden = true;
 
-  adminLoginForm.innerHTML = `
+  updateAdminPanelIdentity(admin);
+
+  adminAuthContent.innerHTML = `
     <div class="admin-login-success">
 
       <span class="eyebrow">
@@ -877,44 +871,707 @@ function showAdminWelcome(admin) {
         You are signed in and ready to manage the LMSY Voting Center.
       </p>
 
+      <div class="admin-login-success__actions">
+
+        <button
+          class="btn btn-primary"
+          type="button"
+          id="openAdminPanel"
+        >
+          Open Admin Panel
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          type="button"
+          id="logoutAdminButton"
+        >
+          Log Out
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document
+    .querySelector('#openAdminPanel')
+    .addEventListener('click', () => {
+      openAdminPanelView();
+    });
+
+  document
+    .querySelector('#logoutAdminButton')
+    .addEventListener('click', async () => {
+      try {
+        await logoutAdmin();
+
+        verifiedAdminAccessPassword = '';
+
+        window.location.reload();
+      } catch (error) {
+        console.error('Unable to log out:', error);
+      }
+    });
+}
+
+function showAdminLoginForm() {
+  adminModalHeader.hidden = false;
+
+  adminModalHeader.innerHTML = `
+    <span class="eyebrow">
+      ADMIN ACCESS
+    </span>
+
+    <h2 class="admin-modal__title">
+      Welcome back
+    </h2>
+
+    <p class="admin-modal__description">
+      Sign in to manage the LMSY Voting Center.
+    </p>
+  `;
+
+  adminAuthContent.innerHTML = `
+    <form
+      class="admin-login-form"
+      id="adminLoginForm"
+    >
+
+      <label class="admin-login-form__field">
+        <span>Email</span>
+
+        <input
+          type="email"
+          id="adminEmail"
+          autocomplete="email"
+          required
+        />
+      </label>
+
+      <label class="admin-login-form__field">
+        <span>Password</span>
+
+        <input
+          type="password"
+          id="adminPassword"
+          autocomplete="current-password"
+          required
+        />
+      </label>
+
+      <p
+        class="admin-login-form__message"
+        id="adminLoginMessage"
+        aria-live="polite"
+      ></p>
+
+      <button
+        class="btn btn-primary admin-login-form__submit"
+        type="submit"
+      >
+        Log In
+      </button>
+
+      <button
+        class="admin-auth-link"
+        type="button"
+        id="backToAdminOptions"
+      >
+        Back
+      </button>
+
+    </form>
+  `;
+
+  const loginForm =
+    document.querySelector('#adminLoginForm');
+
+  const loginEmail =
+    document.querySelector('#adminEmail');
+
+  const loginPassword =
+    document.querySelector('#adminPassword');
+
+  const loginMessage =
+    document.querySelector('#adminLoginMessage');
+
+  document
+    .querySelector('#backToAdminOptions')
+    .addEventListener(
+      'click',
+      showAdminLoginOptions
+    );
+
+  loginForm.addEventListener(
+    'submit',
+    async (event) => {
+      event.preventDefault();
+
+      loginMessage.textContent = '';
+
+      try {
+        const { admin } = await loginAdmin(
+          loginEmail.value.trim(),
+          loginPassword.value
+        );
+
+        showAdminWelcome(admin);
+
+      } catch (error) {
+        loginMessage.textContent =
+          error.message ||
+          'Unable to log in.';
+      }
+    }
+  );
+}
+
+
+// ================================
+// FORGOT PASSWORD
+// ================================
+
+function showAdminForgotPasswordForm() {
+  adminModalHeader.hidden = false;
+
+  adminModalHeader.innerHTML = `
+    <span class="eyebrow">
+      ADMIN ACCESS
+    </span>
+
+    <h2 class="admin-modal__title">
+      Reset Password
+    </h2>
+
+    <p class="admin-modal__description">
+      Enter your administrator email and we’ll send you a password reset link.
+    </p>
+  `;
+
+  adminAuthContent.innerHTML = `
+    <form
+      class="admin-login-form"
+      id="adminForgotPasswordForm"
+    >
+
+      <label class="admin-login-form__field">
+        <span>Email</span>
+
+        <input
+          type="email"
+          id="adminResetEmail"
+          autocomplete="email"
+          required
+        />
+      </label>
+
+      <p
+        class="admin-login-form__message"
+        id="adminResetMessage"
+        aria-live="polite"
+      ></p>
+
+      <button
+        class="btn btn-primary admin-login-form__submit"
+        type="submit"
+      >
+        Send Reset Link
+      </button>
+
+      <button
+        class="admin-auth-link"
+        type="button"
+        id="backToAdminOptions"
+      >
+        Back
+      </button>
+
+    </form>
+  `;
+
+  const resetForm =
+    document.querySelector('#adminForgotPasswordForm');
+
+  const resetEmail =
+    document.querySelector('#adminResetEmail');
+
+  const resetMessage =
+    document.querySelector('#adminResetMessage');
+
+  document
+    .querySelector('#backToAdminOptions')
+    .addEventListener(
+      'click',
+      showAdminLoginOptions
+    );
+
+  resetForm.addEventListener(
+    'submit',
+    async (event) => {
+      event.preventDefault();
+
+      resetMessage.textContent = '';
+
+      try {
+        await sendAdminPasswordReset(
+          resetEmail.value.trim()
+        );
+
+        resetMessage.textContent =
+          'Password reset link sent. Please check your email.';
+
+      } catch (error) {
+        resetMessage.textContent =
+          error.message ||
+          'Unable to send password reset link.';
+      }
+    }
+  );
+}
+
+function showAdminSetNewPasswordForm() {
+  openAdminModal();
+
+  adminModalHeader.hidden = false;
+
+  adminModalHeader.innerHTML = `
+    <span class="eyebrow">
+      ADMIN ACCESS
+    </span>
+
+    <h2 class="admin-modal__title">
+      Set New Password
+    </h2>
+
+    <p class="admin-modal__description">
+      Create a new password for your administrator account.
+    </p>
+  `;
+
+  adminAuthContent.innerHTML = `
+    <form
+      class="admin-login-form"
+      id="adminSetPasswordForm"
+    >
+
+      <label class="admin-login-form__field">
+        <span>New Password</span>
+
+        <input
+          type="password"
+          id="adminNewPassword"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        />
+      </label>
+
+      <label class="admin-login-form__field">
+        <span>Confirm New Password</span>
+
+        <input
+          type="password"
+          id="adminConfirmNewPassword"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        />
+      </label>
+
+      <p
+        class="admin-login-form__message"
+        id="adminSetPasswordMessage"
+        aria-live="polite"
+      ></p>
+
+      <button
+        class="btn btn-primary admin-login-form__submit"
+        type="submit"
+      >
+        Update Password
+      </button>
+
+    </form>
+  `;
+
+  const passwordForm =
+    document.querySelector('#adminSetPasswordForm');
+
+  const newPassword =
+    document.querySelector('#adminNewPassword');
+
+  const confirmPassword =
+    document.querySelector('#adminConfirmNewPassword');
+
+  const passwordMessage =
+    document.querySelector('#adminSetPasswordMessage');
+
+  passwordForm.addEventListener(
+    'submit',
+    async (event) => {
+      event.preventDefault();
+
+      passwordMessage.textContent = '';
+
+      if (
+        newPassword.value !==
+        confirmPassword.value
+      ) {
+        passwordMessage.textContent =
+          'Passwords do not match.';
+
+        return;
+      }
+
+      if (newPassword.value.length < 8) {
+        passwordMessage.textContent =
+          'Password must contain at least 8 characters.';
+
+        return;
+      }
+
+      try {
+        await updateAdminPassword(
+          newPassword.value
+        );
+
+        passwordMessage.textContent =
+          'Password updated successfully.';
+
+      } catch (error) {
+        passwordMessage.textContent =
+          error.message ||
+          'Unable to update password.';
+      }
+    }
+  );
+}
+
+
+// ================================
+// CREATE ADMIN ACCOUNT
+// ================================
+
+function showAdminSignupForm() {
+  adminModalHeader.hidden = false;
+
+  adminModalHeader.innerHTML = `
+    <span class="eyebrow">
+      ADMIN ACCESS
+    </span>
+
+    <h2 class="admin-modal__title">
+      Create Admin Account
+    </h2>
+
+    <p class="admin-modal__description">
+      Create your administrator account to manage the LMSY Voting Center.
+    </p>
+  `;
+
+  adminAuthContent.innerHTML = `
+    <form
+      class="admin-login-form"
+      id="adminSignupForm"
+    >
+
+      <label class="admin-login-form__field">
+        <span>Display Name</span>
+
+        <input
+          type="text"
+          id="adminSignupName"
+          autocomplete="name"
+          required
+        />
+      </label>
+
+      <label class="admin-login-form__field">
+        <span>Email</span>
+
+        <input
+          type="email"
+          id="adminSignupEmail"
+          autocomplete="email"
+          required
+        />
+      </label>
+
+      <label class="admin-login-form__field">
+        <span>Password</span>
+
+        <input
+          type="password"
+          id="adminSignupPassword"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        />
+      </label>
+
+      <label class="admin-login-form__field">
+        <span>Confirm Password</span>
+
+        <input
+          type="password"
+          id="adminSignupConfirmPassword"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        />
+      </label>
+
+      <label class="admin-login-form__field">
+        <span>Role</span>
+
+        <select
+          id="adminSignupRole"
+          required
+        >
+          <option value="">
+            Select a role
+          </option>
+
+          <option value="admin">
+            Admin
+          </option>
+
+          <option value="content_manager">
+            Content Manager
+          </option>
+        </select>
+      </label>
+
+      <p
+        class="admin-login-form__message"
+        id="adminSignupMessage"
+        aria-live="polite"
+      ></p>
+
+      <button
+        class="btn btn-primary admin-login-form__submit"
+        type="submit"
+      >
+        Create Account
+      </button>
+
+      <button
+        class="admin-auth-link"
+        type="button"
+        id="backToAdminOptions"
+      >
+        Back
+      </button>
+
+    </form>
+  `;
+
+  const signupForm =
+    document.querySelector('#adminSignupForm');
+
+  const signupName =
+    document.querySelector('#adminSignupName');
+
+  const signupEmail =
+    document.querySelector('#adminSignupEmail');
+
+  const signupPassword =
+    document.querySelector('#adminSignupPassword');
+
+  const signupConfirmPassword =
+    document.querySelector(
+      '#adminSignupConfirmPassword'
+    );
+
+  const signupRole =
+    document.querySelector('#adminSignupRole');
+
+  const signupMessage =
+    document.querySelector('#adminSignupMessage');
+
+  document
+    .querySelector('#backToAdminOptions')
+    .addEventListener(
+      'click',
+      showAdminLoginOptions
+    );
+
+  signupForm.addEventListener(
+    'submit',
+    async (event) => {
+      event.preventDefault();
+
+      signupMessage.textContent = '';
+
+      if (
+        signupPassword.value !==
+        signupConfirmPassword.value
+      ) {
+        signupMessage.textContent =
+          'Passwords do not match.';
+
+        return;
+      }
+
+      if (signupPassword.value.length < 8) {
+        signupMessage.textContent =
+          'Password must contain at least 8 characters.';
+
+        return;
+      }
+
+      try {
+        const result =
+          await createAdminAccount({
+            accessPassword:
+              verifiedAdminAccessPassword,
+
+            email:
+              signupEmail.value.trim(),
+
+            password:
+              signupPassword.value,
+
+            displayName:
+              signupName.value.trim(),
+
+            role:
+              signupRole.value,
+          });
+
+        signupMessage.textContent =
+          result.message ||
+          'Administrator account created successfully.';
+
+        setTimeout(() => {
+          showAdminLoginForm();
+        }, 1200);
+
+      } catch (error) {
+        signupMessage.textContent =
+          error.message ||
+          'Unable to create administrator account.';
+      }
+    }
+  );
+}
+
+
+// ================================
+// ADMIN LOGIN OPTIONS
+// ================================
+
+function showAdminLoginOptions() {
+  adminModalHeader.hidden = false;
+
+  adminModalHeader.innerHTML = `
+    <span class="eyebrow">
+      ADMIN ACCESS
+    </span>
+
+    <h2 class="admin-modal__title">
+      Welcome
+    </h2>
+
+    <p class="admin-modal__description">
+      Sign in to continue, create your administrator account
+      if this is your first time, or reset your password.
+    </p>
+  `;
+
+  adminAuthContent.innerHTML = `
+    <div class="admin-access-options">
+
       <button
         class="btn btn-primary"
         type="button"
-        id="openAdminPanel"
+        id="showAdminLogin"
       >
-        Open Admin Panel
+        Log In
+      </button>
+
+      <button
+        class="btn btn-secondary"
+        type="button"
+        id="showAdminSignup"
+      >
+        Create Admin Account
+      </button>
+
+      <button
+        class="admin-auth-link"
+        type="button"
+        id="showAdminForgotPassword"
+      >
+        Forgot your password?
       </button>
 
     </div>
   `;
 
-  const openAdminPanelButton =
-    document.querySelector('#openAdminPanel');
+  document
+    .querySelector('#showAdminLogin')
+    .addEventListener(
+      'click',
+      showAdminLoginForm
+    );
 
-  openAdminPanelButton.addEventListener('click', () => {
-    openAdminPanelView();
-  });
+  document
+    .querySelector('#showAdminSignup')
+    .addEventListener(
+      'click',
+      showAdminSignupForm
+    );
+
+  document
+    .querySelector('#showAdminForgotPassword')
+    .addEventListener(
+      'click',
+      showAdminForgotPasswordForm
+    );
 }
 
 
-adminLoginForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
+// ================================
+// VERIFY ADMIN ACCESS
+// ================================
 
-  adminLoginMessage.textContent = '';
+adminAccessForm.addEventListener(
+  'submit',
+  async (event) => {
+    event.preventDefault();
 
-  try {
-    const { admin } = await loginAdmin(
-      adminEmail.value.trim(),
-      adminPassword.value
-    );
+    adminAccessMessage.textContent = '';
 
-    showAdminWelcome(admin);
+    const accessPassword =
+      adminAccessPassword.value;
 
-  } catch (error) {
-    adminLoginMessage.textContent = error.message;
+    try {
+      const result =
+        await verifyAdminAccess(
+          accessPassword
+        );
+
+      if (!result?.success) {
+        throw new Error(
+          result?.message ||
+          'Unable to verify admin access.'
+        );
+      }
+
+      verifiedAdminAccessPassword =
+        accessPassword;
+
+      showAdminLoginOptions();
+
+    } catch (error) {
+      adminAccessMessage.textContent =
+        error.message ||
+        'Incorrect admin access password.';
+    }
   }
-});
-
+);
 
 // ================================
 // PUBLIC VOTING
@@ -1149,6 +1806,50 @@ loadPublicVotingPlatforms();
 
 const publicTutorialGrid =
   document.querySelector('#publicTutorialGrid');
+  const publicWatchGrid =
+  document.querySelector('#publicWatchGrid');
+
+  function detectTutorialType(url) {
+  if (!url) {
+    return 'external';
+  }
+
+  try {
+    const hostname =
+      new URL(url).hostname.toLowerCase();
+
+    if (
+      hostname.includes('youtube.com') ||
+      hostname.includes('youtu.be')
+    ) {
+      return 'youtube';
+    }
+
+    if (
+      hostname.includes('twitter.com') ||
+      hostname.includes('x.com')
+    ) {
+      return 'x';
+    }
+
+    if (hostname.includes('drive.google.com')) {
+      return 'drive';
+    }
+
+    if (hostname.includes('instagram.com')) {
+      return 'instagram';
+    }
+
+    if (hostname.includes('tiktok.com')) {
+      return 'tiktok';
+    }
+
+    return 'external';
+
+  } catch {
+    return 'external';
+  }
+}
 
 function getTutorialTypeLabel(type) {
   const labels = {
@@ -1161,6 +1862,19 @@ function getTutorialTypeLabel(type) {
   };
 
   return labels[type] || 'Tutorial';
+}
+
+function getTutorialButtonLabel(type) {
+  const labels = {
+    youtube: 'Watch Tutorial',
+    x: 'View Thread',
+    drive: 'Open Guide',
+    instagram: 'View Tutorial',
+    tiktok: 'Watch Tutorial',
+    external: 'Open Guide',
+  };
+
+  return labels[type] || 'Open Tutorial';
 }
 
 function getYouTubeEmbedUrl(url) {
@@ -1221,7 +1935,7 @@ function renderPublicTutorials(tutorials) {
       return `
         <article class="tutorial-card">
 
-          ${
+                    ${
             youtubeEmbedUrl
               ? `
                 <div class="tutorial-card__video">
@@ -1235,14 +1949,51 @@ function renderPublicTutorials(tutorials) {
 
                 </div>
               `
-              : ''
+              : `
+                <div
+                  class="
+                    tutorial-card__resource
+                    tutorial-card__resource--${tutorial.tutorial_type}
+                  "
+                >
+
+                  <span class="tutorial-card__resource-icon">
+                    ${
+                      tutorial.tutorial_type === 'x'
+                        ? '𝕏'
+                        : tutorial.tutorial_type === 'drive'
+                          ? '↗'
+                          : tutorial.tutorial_type === 'instagram'
+                            ? '◎'
+                            : tutorial.tutorial_type === 'tiktok'
+                              ? '♪'
+                              : '↗'
+                    }
+                  </span>
+
+                  <span class="tutorial-card__resource-label">
+                    ${getTutorialTypeLabel(
+                      tutorial.tutorial_type
+                    )}
+                  </span>
+
+                </div>
+              `
           }
 
           <div class="tutorial-card__content">
 
-            <span class="tutorial-card__platform">
-              ${getTutorialTypeLabel(tutorial.tutorial_type)}
-            </span>
+            <span class="admin-voting-item__platform">
+  ${getTutorialTypeLabel(tutorial.tutorial_type)}
+</span>
+
+<span class="admin-voting-item__meta">
+  ${
+    tutorial.source === 'voting'
+      ? 'From Voting'
+      : 'Manual'
+  }
+</span>
 
             <h3 class="tutorial-card__title">
               ${tutorial.title}
@@ -1258,7 +2009,7 @@ function renderPublicTutorials(tutorials) {
                 : ''
             }
 
-            ${
+                        ${
               tutorial.tutorial_url
                 ? `
                   <a
@@ -1267,7 +2018,9 @@ function renderPublicTutorials(tutorials) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Open Tutorial
+                    ${getTutorialButtonLabel(
+                      tutorial.tutorial_type
+                    )}
                   </a>
                 `
                 : ''
@@ -1284,9 +2037,51 @@ function renderPublicTutorials(tutorials) {
 async function loadPublicTutorials() {
   try {
     const tutorials =
-  await getActiveTutorials();
+      await getActiveTutorials();
 
-renderPublicTutorials(tutorials);
+    const votingPlatforms =
+      await getActiveVotingPlatforms();
+
+    const votingTutorials =
+      votingPlatforms
+        .filter(
+          (platform) =>
+            platform.tutorial_url
+        )
+        .map((platform) => {
+          return {
+            id: `voting-${platform.id}`,
+
+            title:
+              platform.event,
+
+            description:
+              `Voting guide for ${platform.platform}.`,
+
+            tutorial_url:
+              platform.tutorial_url,
+
+            tutorial_type:
+              detectTutorialType(
+                platform.tutorial_url
+              ),
+
+            sort_order:
+              platform.sort_order ?? 0,
+
+            source:
+              'voting',
+          };
+        });
+
+    const combinedTutorials = [
+      ...tutorials,
+      ...votingTutorials,
+    ];
+
+    renderPublicTutorials(
+      combinedTutorials
+    );
 
   } catch (error) {
     publicTutorialGrid.innerHTML = `
@@ -1303,6 +2098,256 @@ renderPublicTutorials(tutorials);
 }
 
 loadPublicTutorials();
+
+// ================================
+// PUBLIC WATCH & RESULTS
+// ================================
+
+async function loadPublicWatchLinks() {
+  try {
+    const watchSection =
+      document.querySelector('#watch');
+
+    const watchNavLink =
+      document.querySelector(
+        '.navbar__links a[href="#watch"]'
+      );
+
+    const watchLinks =
+      await getActiveWatchLinks();
+
+    if (watchLinks.length === 0) {
+      publicWatchGrid.innerHTML = '';
+
+      if (watchSection) {
+        watchSection.hidden = true;
+      }
+
+      if (watchNavLink) {
+        watchNavLink.hidden = true;
+      }
+
+      return;
+    }
+
+    if (watchSection) {
+      watchSection.hidden = false;
+    }
+
+    if (watchNavLink) {
+      watchNavLink.hidden = false;
+    }
+
+    publicWatchGrid.innerHTML = watchLinks
+      .map((item) => {
+        const isLive =
+          item.type === 'live';
+
+        let thumbnailUrl =
+          item.thumbnail_url;
+
+        if (
+          thumbnailUrl &&
+          (
+            thumbnailUrl.includes('youtube.com') ||
+            thumbnailUrl.includes('youtu.be')
+          )
+        ) {
+          try {
+            const url =
+              new URL(thumbnailUrl);
+
+            let videoId = null;
+
+            if (url.hostname.includes('youtu.be')) {
+              videoId =
+                url.pathname.slice(1);
+            } else {
+              videoId =
+                url.searchParams.get('v');
+            }
+
+            if (videoId) {
+              thumbnailUrl =
+                `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            }
+          } catch {
+            thumbnailUrl = null;
+          }
+        }
+
+        const scheduledDate =
+          item.scheduled_at
+            ? new Date(item.scheduled_at)
+            : null;
+
+        const thailandTime =
+          scheduledDate
+            ? scheduledDate.toLocaleString(
+                'en-US',
+                {
+                  timeZone: 'Asia/Bangkok',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                  timeZoneName: 'short',
+                }
+              )
+            : null;
+
+        const localTime =
+          scheduledDate
+            ? scheduledDate.toLocaleString(
+                undefined,
+                {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                }
+              )
+            : null;
+
+        return `
+          <article class="watch-card">
+
+            ${
+              thumbnailUrl
+                ? `
+                  <div class="watch-card__media">
+                    <img
+                      src="${thumbnailUrl}"
+                      alt="${item.title}"
+                      loading="lazy"
+                    />
+                  </div>
+                `
+                : `
+                  <div class="watch-card__placeholder">
+
+                    <span class="watch-card__placeholder-icon">
+                      ${
+                        isLive
+                          ? '▶'
+                          : '★'
+                      }
+                    </span>
+
+                    <span class="watch-card__placeholder-label">
+                      ${
+                        isLive
+                          ? 'Live Stream'
+                          : 'Results'
+                      }
+                    </span>
+
+                  </div>
+                `
+            }
+
+            <div class="watch-card__content">
+
+              <span class="watch-card__type">
+                ${isLive ? 'Live Stream' : 'Results'}
+              </span>
+
+              <h3 class="watch-card__title">
+                ${item.title}
+              </h3>
+
+              ${
+                item.platform
+                  ? `
+                    <span class="watch-card__platform">
+                      ${item.platform}
+                    </span>
+                  `
+                  : ''
+              }
+
+              ${
+                item.description
+                  ? `
+                    <p class="watch-card__description">
+                      ${item.description}
+                    </p>
+                  `
+                  : ''
+              }
+
+              ${
+                thailandTime
+                  ? `
+                    <div class="watch-card__time">
+
+                      <div class="watch-card__time-row">
+                        <span class="watch-card__time-label">
+                          Thailand
+                        </span>
+
+                        <span class="watch-card__time-value">
+                          ${thailandTime}
+                        </span>
+                      </div>
+
+                      <div class="watch-card__time-row">
+                        <span class="watch-card__time-label">
+                          Your Time
+                        </span>
+
+                        <span class="watch-card__time-value">
+                          ${localTime}
+                        </span>
+                      </div>
+
+                    </div>
+                  `
+                  : ''
+              }
+
+              <a
+                class="btn ${
+                  isLive
+                    ? 'btn-primary'
+                    : 'btn-secondary'
+                }"
+                href="${item.url}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ${
+                  item.button_label ||
+                  (
+                    isLive
+                      ? 'Watch Live'
+                      : 'View Results'
+                  )
+                }
+              </a>
+
+            </div>
+
+          </article>
+        `;
+      })
+      .join('');
+
+  } catch (error) {
+    publicWatchGrid.innerHTML = `
+      <p class="vote-empty__description">
+        Unable to load Watch & Results.
+      </p>
+    `;
+
+    console.error(
+      'Unable to load public Watch & Results:',
+      error
+    );
+  }
+}
 
 // ================================
 // PUBLIC ARTISTS
@@ -2361,7 +3406,7 @@ async function loadArtistsAdminSection() {
             type="button"
             id="cancelAddArtist"
           >
-            Cancel
+            ← Cancel
           </button>
 
         </div>
@@ -2601,998 +3646,43 @@ async function loadArtistsAdminSection() {
   });
 
 
-// ================================
-// ADD CONTENT
-// ================================
-
-addContentButton.addEventListener('click', () => {
-  adminPanelBody.innerHTML = `
-    <div class="admin-form-view">
-
-      <div class="admin-form-view__header">
-
-        <div>
-          <span class="eyebrow">
-            CONTENT
-          </span>
-
-          <h3 class="admin-section-header__title">
-            Add Site Content
-          </h3>
-
-          <p class="admin-section-header__description">
-            Create reusable content for the public website.
-          </p>
-        </div>
-
-        <button
-          class="btn btn-secondary"
-          type="button"
-          id="cancelAddContent"
-        >
-          Cancel
-        </button>
-
-      </div>
-
-      <form
-        class="admin-voting-form"
-        id="adminContentForm"
-      >
-
-        <label>
-          <span>Content Area</span>
-
-          <select
-            name="content_key"
-            id="addContentArea"
-            required
-          >
-            <option value="hero_main">
-              Hero
-            </option>
-
-            <option value="artists_intro">
-              Artists Section Intro
-            </option>
-
-            <option value="tutorials_intro">
-              Tutorials Section Intro
-            </option>
-
-            <option value="watch_intro">
-              Watch & Results Intro
-            </option>
-
-            <option value="support_intro">
-              Support Section Intro
-            </option>
-          </select>
-        </label>
-
-        <label>
-          <span>Title</span>
-
-          <input
-            type="text"
-            name="title"
-          />
-        </label>
-
-        <label style="grid-column: 1 / -1;">
-          <span>Subtitle</span>
-
-          <input
-            type="text"
-            name="subtitle"
-          />
-        </label>
-
-        <label style="grid-column: 1 / -1;">
-          <span>Body</span>
-
-          <textarea
-            name="body"
-            rows="5"
-          ></textarea>
-        </label>
-
-        <div
-          id="addContentButtonFields"
-          style="display: none; grid-column: 1 / -1;"
-        >
-
-          <label>
-            <span>Primary Button Label</span>
-
-            <input
-              type="text"
-              name="button_label"
-              placeholder="Start Voting"
-            />
-          </label>
-
-          <label>
-            <span>Primary Button URL</span>
-
-            <input
-              type="text"
-              name="button_url"
-              placeholder="#vote"
-            />
-          </label>
-
-          <label>
-            <span>Secondary Button Label</span>
-
-            <input
-              type="text"
-              name="secondary_button_label"
-              placeholder="View Tutorials"
-            />
-          </label>
-
-          <label>
-            <span>Secondary Button URL</span>
-
-            <input
-              type="text"
-              name="secondary_button_url"
-              placeholder="#tutorials"
-            />
-          </label>
-
-        </div>
-
-        <label>
-          <input
-            type="checkbox"
-            name="active"
-            checked
-          />
-
-          <span>Active</span>
-        </label>
-
-        <button
-          class="btn btn-primary"
-          type="submit"
-        >
-          Save Content
-        </button>
-
-      </form>
-
-    </div>
-  `;
-
-
   // ================================
-  // SHOW BUTTON FIELDS ONLY FOR HERO
+  // ADD CONTENT
   // ================================
 
-  const addContentArea =
-    document.querySelector('#addContentArea');
-
-  const addContentButtonFields =
-    document.querySelector(
-      '#addContentButtonFields'
-    );
-
-  function updateAddContentFields() {
-    const isHero =
-      addContentArea.value === 'hero_main';
-
-    addContentButtonFields.style.display =
-      isHero ? 'grid' : 'none';
-  }
-
-  updateAddContentFields();
-
-  addContentArea.addEventListener(
-    'change',
-    updateAddContentFields
-  );
-
-
-  // ================================
-  // CANCEL
-  // ================================
-
-  const cancelAddContent =
-    document.querySelector('#cancelAddContent');
-
-  cancelAddContent.addEventListener(
-    'click',
-    () => {
-      loadArtistsAdminSection();
-    }
-  );
-
-
-  // ================================
-  // SAVE CONTENT
-  // ================================
-
-  const adminContentForm =
-    document.querySelector('#adminContentForm');
-
-  adminContentForm.addEventListener(
-    'submit',
-    async (event) => {
-      event.preventDefault();
-
-      const formData =
-        new FormData(adminContentForm);
-
-      const contentKey =
-        formData.get('content_key').trim();
-
-      const isHero =
-        contentKey === 'hero_main';
-
-      const contentData = {
-        content_key: contentKey,
-
-        title:
-          formData.get('title').trim() ||
-          null,
-
-        subtitle:
-          formData.get('subtitle').trim() ||
-          null,
-
-        body:
-          formData.get('body').trim() ||
-          null,
-
-        button_label:
-          isHero
-            ? formData.get('button_label').trim() ||
-              null
-            : null,
-
-        button_url:
-          isHero
-            ? formData.get('button_url').trim() ||
-              null
-            : null,
-
-        secondary_button_label:
-          isHero
-            ? formData.get('secondary_button_label').trim() ||
-              null
-            : null,
-
-        secondary_button_url:
-          isHero
-            ? formData.get('secondary_button_url').trim() ||
-              null
-            : null,
-
-        image_url: null,
-
-        active:
-          formData.get('active') === 'on',
-      };
-
-      const saveContentButton =
-        adminContentForm.querySelector(
-          'button[type="submit"]'
-        );
-
-      try {
-        saveContentButton.disabled = true;
-        saveContentButton.textContent =
-          'Saving...';
-
-        await createContent(contentData);
-
-        await loadArtistsAdminSection();
-
-      } catch (error) {
-        saveContentButton.disabled = false;
-        saveContentButton.textContent =
-          'Save Content';
-
-        console.error(
-          'Unable to create site content:',
-          error
-        );
-      }
-    }
-  );
-});
-// ================================
-// LOAD ARTISTS
-// ================================
-
-try {
-  const artists =
-    await getArtists();
-
-  if (artists.length === 0) {
-    adminArtistList.innerHTML = `
-      <p class="admin-panel__placeholder">
-        No artists yet.
-      </p>
-    `;
-  } else {
-    adminArtistList.innerHTML = artists
-      .map((artist) => {
-        return `
-          <article
-            class="admin-voting-item"
-            data-artist-id="${artist.id}"
-          >
-
-            <div class="admin-voting-item__info">
-
-              <div class="admin-voting-item__top">
-
-                <strong class="admin-voting-item__event">
-                  ${artist.name}
-                </strong>
-
-                <span class="admin-voting-item__status">
-                  ${artist.active ? 'Active' : 'Inactive'}
-                </span>
-
-              </div>
-
-              <span class="admin-voting-item__platform">
-                ${artist.slug}
-              </span>
-
-              ${
-                artist.description
-                  ? `
-                    <span class="admin-voting-item__meta">
-                      ${artist.description}
-                    </span>
-                  `
-                  : ''
-              }
-
-            </div>
-
-            <div class="admin-voting-item__actions">
-
-              <button
-                class="btn btn-secondary"
-                type="button"
-                data-edit-artist="${artist.id}"
-              >
-                Edit
-              </button>
-
-            </div>
-
-          </article>
-        `;
-      })
-      .join('');
-  }
-
-
-  // ================================
-  // EDIT ARTIST
-  // ================================
-
-  const editArtistButtons =
-    document.querySelectorAll('[data-edit-artist]');
-
-  editArtistButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const artistId =
-        Number(button.dataset.editArtist);
-
-      const artist =
-        artists.find((item) => item.id === artistId);
-
-      if (!artist) {
-        return;
-      }
-
-      adminPanelBody.innerHTML = `
-        <div class="admin-form-view">
-
-          <div class="admin-form-view__header">
-
-            <div>
-
-              <span class="eyebrow">
-                ARTIST
-              </span>
-
-              <h3 class="admin-section-header__title">
-                Edit ${artist.name}
-              </h3>
-
-              <p class="admin-section-header__description">
-                Update artist information shown on the website.
-              </p>
-
-            </div>
-
-            <button
-              class="btn btn-secondary"
-              type="button"
-              id="cancelEditArtist"
-            >
-              Cancel
-            </button>
-
-          </div>
-
-          <form
-            class="admin-voting-form"
-            id="adminEditArtistForm"
-          >
-
-            <label>
-              <span>Name</span>
-
-              <input
-                type="text"
-                name="name"
-                value="${artist.name ?? ''}"
-                required
-              />
-            </label>
-
-            <label>
-              <span>Slug</span>
-
-              <select
-                name="slug"
-                required
-              >
-                <option
-                  value="lookmhee"
-                  ${artist.slug === 'lookmhee' ? 'selected' : ''}
-                >
-                  Lookmhee
-                </option>
-
-                <option
-                  value="sonya"
-                  ${artist.slug === 'sonya' ? 'selected' : ''}
-                >
-                  Sonya
-                </option>
-
-                <option
-                  value="lmsy"
-                  ${artist.slug === 'lmsy' ? 'selected' : ''}
-                >
-                  LMSY
-                </option>
-              </select>
-            </label>
-
-            <label style="grid-column: 1 / -1;">
-              <span>Description</span>
-
-              <textarea
-                name="description"
-                rows="4"
-              >${artist.description ?? ''}</textarea>
-            </label>
-
-            ${
-              artist.image_url
-                ? `
-                  <div style="grid-column: 1 / -1;">
-
-                    <span
-                      style="
-                        display: block;
-                        margin-bottom: 8px;
-                        font-weight: 600;
-                      "
-                    >
-                      Current Photo
-                    </span>
-
-                    <img
-                      src="${artist.image_url}"
-                      alt="${artist.name}"
-                      style="
-                        width: 140px;
-                        height: 140px;
-                        object-fit: cover;
-                        border-radius: 16px;
-                        display: block;
-                      "
-                    />
-
-                  </div>
-                `
-                : ''
-            }
-
-            <label style="grid-column: 1 / -1;">
-              <span>Upload New Photo</span>
-
-              <input
-                type="file"
-                name="artist_photo"
-                accept="image/png, image/jpeg, image/webp"
-              />
-
-              <small>
-                Leave empty to keep the current photo.
-              </small>
-            </label>
-
-            <label>
-              <span>Instagram URL</span>
-
-              <input
-                type="url"
-                name="instagram_url"
-                value="${artist.instagram_url ?? ''}"
-              />
-            </label>
-
-            <label>
-              <span>X / Twitter URL</span>
-
-              <input
-                type="url"
-                name="x_url"
-                value="${artist.x_url ?? ''}"
-              />
-            </label>
-
-            <label>
-              <span>TikTok URL</span>
-
-              <input
-                type="url"
-                name="tiktok_url"
-                value="${artist.tiktok_url ?? ''}"
-              />
-            </label>
-
-            <label>
-              <span>Updates URL</span>
-
-              <input
-                type="url"
-                name="updates_url"
-                value="${artist.updates_url ?? ''}"
-              />
-            </label>
-
-            <label>
-              <span>Sort order</span>
-
-              <input
-                type="number"
-                name="sort_order"
-                value="${artist.sort_order ?? 0}"
-              />
-            </label>
-
-            <label>
-
-              <input
-                type="checkbox"
-                name="active"
-                ${artist.active ? 'checked' : ''}
-              />
-
-              <span>Active</span>
-
-            </label>
-
-            <button
-              class="btn btn-primary"
-              type="submit"
-            >
-              Save Changes
-            </button>
-
-          </form>
-
-        </div>
-      `;
-
-
-      const cancelEditArtist =
-        document.querySelector('#cancelEditArtist');
-
-      cancelEditArtist.addEventListener('click', () => {
-        loadArtistsAdminSection();
-      });
-
-
-      const adminEditArtistForm =
-        document.querySelector('#adminEditArtistForm');
-
-      adminEditArtistForm.addEventListener(
-        'submit',
-        async (event) => {
-          event.preventDefault();
-
-          const formData =
-            new FormData(adminEditArtistForm);
-
-          const artistSlug =
-            formData.get('slug');
-
-          const newArtistPhoto =
-            formData.get('artist_photo');
-
-          const saveChangesButton =
-            adminEditArtistForm.querySelector(
-              'button[type="submit"]'
-            );
-
-          try {
-            saveChangesButton.disabled = true;
-            saveChangesButton.textContent =
-              'Saving...';
-
-            let imageUrl =
-              artist.image_url || null;
-
-            if (
-              newArtistPhoto &&
-              newArtistPhoto.size > 0
-            ) {
-              saveChangesButton.textContent =
-                'Uploading photo...';
-
-              imageUrl =
-                await uploadArtistPhoto(
-                  newArtistPhoto,
-                  artistSlug
-                );
-            }
-
-            saveChangesButton.textContent =
-              'Saving changes...';
-
-            const artistData = {
-              name:
-                formData.get('name').trim(),
-
-              slug:
-                artistSlug,
-
-              description:
-                formData.get('description').trim() || null,
-
-              image_url:
-                imageUrl,
-
-              instagram_url:
-                formData.get('instagram_url').trim() || null,
-
-              x_url:
-                formData.get('x_url').trim() || null,
-
-              tiktok_url:
-                formData.get('tiktok_url').trim() || null,
-
-              updates_url:
-                formData.get('updates_url').trim() || null,
-
-              sort_order:
-                Number(formData.get('sort_order')) || 0,
-
-              active:
-                formData.get('active') === 'on',
-            };
-
-            await updateArtist(
-              artistId,
-              artistData
-            );
-
-            await loadPublicArtists();
-
-            saveChangesButton.textContent =
-              'Saved ✓';
-
-            setTimeout(async () => {
-              await loadArtistsAdminSection();
-            }, 700);
-
-          } catch (error) {
-            saveChangesButton.disabled = false;
-            saveChangesButton.textContent =
-              'Save Changes';
-
-            console.error(
-              'Unable to update artist:',
-              error
-            );
-          }
-        }
-      );
-    });
-  });
-
-} catch (error) {
-  adminArtistList.innerHTML = `
-    <p class="admin-panel__placeholder">
-      Unable to load artists.
-    </p>
-  `;
-
-  console.error(
-    'Unable to load artists:',
-    error
-  );
-}
-
-// ================================
-// LOAD SITE CONTENT
-// ================================
-
-try {
-  const contentItems =
-    await getContent();
-
-  if (contentItems.length === 0) {
-    adminContentList.innerHTML = `
-      <p class="admin-panel__placeholder">
-        No site content yet.
-      </p>
-    `;
-  } else {
-    adminContentList.innerHTML = contentItems
-  .map((content) => {
-    return `
-      <article
-        class="admin-voting-item"
-        data-content-id="${content.id}"
-      >
-
-        <div class="admin-voting-item__info">
-
-          <div class="admin-voting-item__top">
-
-            <strong class="admin-voting-item__event">
-              ${content.title || content.content_key}
-            </strong>
-
-            <div style="display: flex; gap: 8px; align-items: center;">
-
-              ${
-                content.is_main
-                  ? `
-                    <span class="admin-voting-item__status">
-                      Main
-                    </span>
-                  `
-                  : ''
-              }
-
-              <span class="admin-voting-item__status">
-                ${content.active ? 'Active' : 'Inactive'}
-              </span>
-
-            </div>
-
-          </div>
-
-          <span class="admin-voting-item__platform">
-            ${content.content_key}
-          </span>
-
-          ${
-            content.subtitle
-              ? `
-                <span class="admin-voting-item__meta">
-                  ${content.subtitle}
-                </span>
-              `
-              : ''
-          }
-
-        </div>
-
-        <div class="admin-voting-item__actions">
-
-          ${
-            content.is_main
-              ? `
-                <button
-                  class="btn btn-secondary"
-                  type="button"
-                  data-return-base-content="${content.id}"
-                >
-                  Return to Base
-                </button>
-              `
-              : `
-                <button
-                  class="btn btn-secondary"
-                  type="button"
-                  data-set-main-content="${content.id}"
-                >
-                  Set as Main
-                </button>
-              `
-          }
-
-          <button
-            class="btn btn-secondary"
-            type="button"
-            data-edit-content="${content.id}"
-          >
-            Edit
-          </button>
-
-          <button
-            class="btn btn-secondary"
-            type="button"
-            data-delete-content="${content.id}"
-          >
-            Delete
-          </button>
-
-        </div>
-
-      </article>
-    `;
-  })
-  .join('');
-}
-
-  // ================================
-// SET CONTENT AS MAIN
-// ================================
-
-const setMainContentButtons =
-  document.querySelectorAll('[data-set-main-content]');
-
-setMainContentButtons.forEach((button) => {
-  button.addEventListener('click', async () => {
-    const contentId =
-      Number(button.dataset.setMainContent);
-
-    const content =
-      contentItems.find(
-        (item) => item.id === contentId
-      );
-
-    if (!content) {
-      return;
-    }
-
-    try {
-      button.disabled = true;
-      button.textContent =
-        'Setting...';
-
-      await setContentAsMain(
-        contentId,
-        content.content_key
-      );
-
-      await loadPublicSiteContent();
-      await loadArtistsAdminSection();
-
-    } catch (error) {
-      button.disabled = false;
-      button.textContent =
-        'Set as Main';
-
-      console.error(
-        'Unable to set content as main:',
-        error
-      );
-    }
-  });
-});
-
-// ================================
-// RETURN CONTENT TO BASE
-// ================================
-
-const returnBaseContentButtons =
-  document.querySelectorAll('[data-return-base-content]');
-
-returnBaseContentButtons.forEach((button) => {
-  button.addEventListener('click', async () => {
-    const contentId =
-      Number(button.dataset.returnBaseContent);
-
-    const content =
-      contentItems.find(
-        (item) => item.id === contentId
-      );
-
-    if (!content) {
-      return;
-    }
-
-    try {
-      button.disabled = true;
-      button.textContent =
-        'Returning...';
-
-      await returnContentToBase(
-        content.content_key
-      );
-
-      await loadPublicSiteContent();
-      await loadArtistsAdminSection();
-
-    } catch (error) {
-      button.disabled = false;
-      button.textContent =
-        'Return to Base';
-
-      console.error(
-        'Unable to return content to base:',
-        error
-      );
-    }
-  });
-});
-
-// ================================
-// EDIT CONTENT
-// ================================
-
-const editContentButtons =
-  document.querySelectorAll('[data-edit-content]');
-
-editContentButtons.forEach((button) => {
-  button.addEventListener('click', () => {
-    const contentId =
-      Number(button.dataset.editContent);
-
-    const content =
-      contentItems.find(
-        (item) => item.id === contentId
-      );
-
-    if (!content) {
-      return;
-    }
-
+  addContentButton.addEventListener('click', () => {
     adminPanelBody.innerHTML = `
       <div class="admin-form-view">
 
         <div class="admin-form-view__header">
 
           <div>
-
             <span class="eyebrow">
               CONTENT
             </span>
 
             <h3 class="admin-section-header__title">
-              Edit Site Content
+              Add Site Content
             </h3>
 
             <p class="admin-section-header__description">
-              Update this public website content.
+              Create reusable content for the public website.
             </p>
-
           </div>
 
           <button
             class="btn btn-secondary"
             type="button"
-            id="cancelEditContent"
+            id="cancelAddContent"
           >
-            Cancel
+            ← Cancel
           </button>
 
         </div>
 
         <form
           class="admin-voting-form"
-          id="adminEditContentForm"
+          id="adminContentForm"
         >
 
           <label>
@@ -3600,44 +3690,28 @@ editContentButtons.forEach((button) => {
 
             <select
               name="content_key"
-              id="editContentArea"
+              id="addContentArea"
               required
             >
-              <option
-                value="hero_main"
-                ${content.content_key === 'hero_main' ? 'selected' : ''}
-              >
+              <option value="hero_main">
                 Hero
               </option>
 
-              <option
-                value="artists_intro"
-                ${content.content_key === 'artists_intro' ? 'selected' : ''}
-              >
+              <option value="artists_intro">
                 Artists Section Intro
               </option>
 
-              <option
-                value="tutorials_intro"
-                ${content.content_key === 'tutorials_intro' ? 'selected' : ''}
-              >
+              <option value="tutorials_intro">
                 Tutorials Section Intro
               </option>
 
-              <option
-                value="watch_intro"
-                ${content.content_key === 'watch_intro' ? 'selected' : ''}
-              >
+              <option value="watch_intro">
                 Watch & Results Intro
               </option>
 
-              <option
-                value="support_intro"
-                ${content.content_key === 'support_intro' ? 'selected' : ''}
-              >
+              <option value="support_intro">
                 Support Section Intro
               </option>
-
             </select>
           </label>
 
@@ -3647,7 +3721,6 @@ editContentButtons.forEach((button) => {
             <input
               type="text"
               name="title"
-              value="${content.title ?? ''}"
             />
           </label>
 
@@ -3657,7 +3730,6 @@ editContentButtons.forEach((button) => {
             <input
               type="text"
               name="subtitle"
-              value="${content.subtitle ?? ''}"
             />
           </label>
 
@@ -3667,11 +3739,11 @@ editContentButtons.forEach((button) => {
             <textarea
               name="body"
               rows="5"
-            >${content.body ?? ''}</textarea>
+            ></textarea>
           </label>
 
           <div
-            id="editContentButtonFields"
+            id="addContentButtonFields"
             style="display: none; grid-column: 1 / -1;"
           >
 
@@ -3681,7 +3753,6 @@ editContentButtons.forEach((button) => {
               <input
                 type="text"
                 name="button_label"
-                value="${content.button_label ?? ''}"
                 placeholder="Start Voting"
               />
             </label>
@@ -3692,7 +3763,6 @@ editContentButtons.forEach((button) => {
               <input
                 type="text"
                 name="button_url"
-                value="${content.button_url ?? ''}"
                 placeholder="#vote"
               />
             </label>
@@ -3703,7 +3773,6 @@ editContentButtons.forEach((button) => {
               <input
                 type="text"
                 name="secondary_button_label"
-                value="${content.secondary_button_label ?? ''}"
                 placeholder="View Tutorials"
               />
             </label>
@@ -3714,7 +3783,6 @@ editContentButtons.forEach((button) => {
               <input
                 type="text"
                 name="secondary_button_url"
-                value="${content.secondary_button_url ?? ''}"
                 placeholder="#tutorials"
               />
             </label>
@@ -3722,22 +3790,20 @@ editContentButtons.forEach((button) => {
           </div>
 
           <label>
-
             <input
               type="checkbox"
               name="active"
-              ${content.active ? 'checked' : ''}
+              checked
             />
 
             <span>Active</span>
-
           </label>
 
           <button
             class="btn btn-primary"
             type="submit"
           >
-            Save Changes
+            Save Content
           </button>
 
         </form>
@@ -3750,27 +3816,27 @@ editContentButtons.forEach((button) => {
     // SHOW BUTTON FIELDS ONLY FOR HERO
     // ================================
 
-    const editContentArea =
-      document.querySelector('#editContentArea');
+    const addContentArea =
+      document.querySelector('#addContentArea');
 
-    const editContentButtonFields =
+    const addContentButtonFields =
       document.querySelector(
-        '#editContentButtonFields'
+        '#addContentButtonFields'
       );
 
-    function updateEditContentFields() {
+    function updateAddContentFields() {
       const isHero =
-        editContentArea.value === 'hero_main';
+        addContentArea.value === 'hero_main';
 
-      editContentButtonFields.style.display =
+      addContentButtonFields.style.display =
         isHero ? 'grid' : 'none';
     }
 
-    updateEditContentFields();
+    updateAddContentFields();
 
-    editContentArea.addEventListener(
+    addContentArea.addEventListener(
       'change',
-      updateEditContentFields
+      updateAddContentFields
     );
 
 
@@ -3778,10 +3844,10 @@ editContentButtons.forEach((button) => {
     // CANCEL
     // ================================
 
-    const cancelEditContent =
-      document.querySelector('#cancelEditContent');
+    const cancelAddContent =
+      document.querySelector('#cancelAddContent');
 
-    cancelEditContent.addEventListener(
+    cancelAddContent.addEventListener(
       'click',
       () => {
         loadArtistsAdminSection();
@@ -3790,21 +3856,19 @@ editContentButtons.forEach((button) => {
 
 
     // ================================
-    // SAVE EDIT
+    // SAVE CONTENT
     // ================================
 
-    const adminEditContentForm =
-      document.querySelector(
-        '#adminEditContentForm'
-      );
+    const adminContentForm =
+      document.querySelector('#adminContentForm');
 
-    adminEditContentForm.addEventListener(
+    adminContentForm.addEventListener(
       'submit',
       async (event) => {
         event.preventDefault();
 
         const formData =
-          new FormData(adminEditContentForm);
+          new FormData(adminContentForm);
 
         const contentKey =
           formData.get('content_key').trim();
@@ -3857,111 +3921,1220 @@ editContentButtons.forEach((button) => {
             formData.get('active') === 'on',
         };
 
-        const saveChangesButton =
-          adminEditContentForm.querySelector(
+        const saveContentButton =
+          adminContentForm.querySelector(
             'button[type="submit"]'
           );
 
         try {
-          saveChangesButton.disabled = true;
-          saveChangesButton.textContent =
+          saveContentButton.disabled = true;
+          saveContentButton.textContent =
             'Saving...';
 
-          await updateContent(
-            contentId,
-            contentData
-          );
+          await createContent(contentData);
 
-          await loadPublicSiteContent();
-
-          saveChangesButton.textContent =
-            'Saved ✓';
-
-          setTimeout(async () => {
-            await loadArtistsAdminSection();
-          }, 700);
+          await loadArtistsAdminSection();
 
         } catch (error) {
-          saveChangesButton.disabled = false;
-          saveChangesButton.textContent =
-            'Save Changes';
+          saveContentButton.disabled = false;
+          saveContentButton.textContent =
+            'Save Content';
 
           console.error(
-            'Unable to update site content:',
+            'Unable to create site content:',
             error
           );
         }
       }
     );
   });
-});
 
 
-// ================================
-// DELETE CONTENT
-// ================================
+  // ================================
+  // LOAD ARTISTS
+  // ================================
 
-const deleteContentButtons =
-  document.querySelectorAll('[data-delete-content]');
+  try {
+    const artists =
+      await getArtists();
 
-deleteContentButtons.forEach((button) => {
-  button.addEventListener('click', async () => {
-    const contentId =
-      Number(button.dataset.deleteContent);
+    if (artists.length === 0) {
+      adminArtistList.innerHTML = `
+        <p class="admin-panel__placeholder">
+          No artists yet.
+        </p>
+      `;
+    } else {
+      adminArtistList.innerHTML = artists
+        .map((artist) => {
+          return `
+            <article
+              class="admin-voting-item"
+              data-artist-id="${artist.id}"
+            >
 
-    const content =
-      contentItems.find(
-        (item) => item.id === contentId
-      );
+              <div class="admin-voting-item__info">
 
-    if (!content) {
-      return;
+                <div class="admin-voting-item__top">
+
+                  <strong class="admin-voting-item__event">
+                    ${artist.name}
+                  </strong>
+
+                  <span
+                    class="admin-voting-item__status ${
+                      artist.active ? '' : 'is-inactive'
+                    }"
+                  >
+                    ${artist.active ? 'Active' : 'Inactive'}
+                  </span>
+
+                </div>
+
+                <span class="admin-voting-item__platform">
+                  ${artist.slug}
+                </span>
+
+                ${
+                  artist.description
+                    ? `
+                      <span class="admin-voting-item__meta">
+                        ${artist.description}
+                      </span>
+                    `
+                    : ''
+                }
+
+              </div>
+
+              <div class="admin-voting-item__actions">
+
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  data-edit-artist="${artist.id}"
+                >
+                  Edit
+                </button>
+
+              </div>
+
+            </article>
+          `;
+        })
+        .join('');
     }
 
-    const confirmed =
-      window.confirm(
-        `Delete "${content.title || content.content_key}"? This action cannot be undone.`
+
+    // ================================
+    // EDIT ARTIST
+    // ================================
+
+    const editArtistButtons =
+      document.querySelectorAll(
+        '[data-edit-artist]'
       );
 
-    if (!confirmed) {
-      return;
+    editArtistButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const artistId =
+          Number(
+            button.dataset.editArtist
+          );
+
+        const artist =
+          artists.find(
+            (item) =>
+              item.id === artistId
+          );
+
+        if (!artist) {
+          return;
+        }
+
+        adminPanelBody.innerHTML = `
+          <div class="admin-form-view">
+
+            <div class="admin-form-view__header">
+
+              <div>
+
+                <span class="eyebrow">
+                  ARTIST
+                </span>
+
+                <h3 class="admin-section-header__title">
+                  Edit ${artist.name}
+                </h3>
+
+                <p class="admin-section-header__description">
+                  Update artist information shown on the website.
+                </p>
+
+              </div>
+
+              <button
+                class="btn btn-secondary"
+                type="button"
+                id="cancelEditArtist"
+              >
+                ← Cancel
+              </button>
+
+            </div>
+
+            <form
+              class="admin-voting-form"
+              id="adminEditArtistForm"
+            >
+
+              <label>
+                <span>Name</span>
+
+                <input
+                  type="text"
+                  name="name"
+                  value="${artist.name ?? ''}"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Slug</span>
+
+                <select
+                  name="slug"
+                  required
+                >
+                  <option
+                    value="lookmhee"
+                    ${artist.slug === 'lookmhee' ? 'selected' : ''}
+                  >
+                    Lookmhee
+                  </option>
+
+                  <option
+                    value="sonya"
+                    ${artist.slug === 'sonya' ? 'selected' : ''}
+                  >
+                    Sonya
+                  </option>
+
+                  <option
+                    value="lmsy"
+                    ${artist.slug === 'lmsy' ? 'selected' : ''}
+                  >
+                    LMSY
+                  </option>
+                </select>
+              </label>
+
+              <label style="grid-column: 1 / -1;">
+                <span>Description</span>
+
+                <textarea
+                  name="description"
+                  rows="4"
+                >${artist.description ?? ''}</textarea>
+              </label>
+
+              ${
+                artist.image_url
+                  ? `
+                    <div style="grid-column: 1 / -1;">
+
+                      <span
+                        style="
+                          display: block;
+                          margin-bottom: 8px;
+                          font-weight: 600;
+                        "
+                      >
+                        Current Photo
+                      </span>
+
+                      <img
+                        src="${artist.image_url}"
+                        alt="${artist.name}"
+                        style="
+                          width: 140px;
+                          height: 140px;
+                          object-fit: cover;
+                          border-radius: 16px;
+                          display: block;
+                        "
+                      />
+
+                    </div>
+                  `
+                  : ''
+              }
+
+              <label style="grid-column: 1 / -1;">
+                <span>Upload New Photo</span>
+
+                <input
+                  type="file"
+                  name="artist_photo"
+                  accept="image/png, image/jpeg, image/webp"
+                />
+
+                <small>
+                  Leave empty to keep the current photo.
+                </small>
+              </label>
+
+              <label>
+                <span>Instagram URL</span>
+
+                <input
+                  type="url"
+                  name="instagram_url"
+                  value="${artist.instagram_url ?? ''}"
+                />
+              </label>
+
+              <label>
+                <span>X / Twitter URL</span>
+
+                <input
+                  type="url"
+                  name="x_url"
+                  value="${artist.x_url ?? ''}"
+                />
+              </label>
+
+              <label>
+                <span>TikTok URL</span>
+
+                <input
+                  type="url"
+                  name="tiktok_url"
+                  value="${artist.tiktok_url ?? ''}"
+                />
+              </label>
+
+              <label>
+                <span>Updates URL</span>
+
+                <input
+                  type="url"
+                  name="updates_url"
+                  value="${artist.updates_url ?? ''}"
+                />
+              </label>
+
+              <label>
+                <span>Sort order</span>
+
+                <input
+                  type="number"
+                  name="sort_order"
+                  value="${artist.sort_order ?? 0}"
+                />
+              </label>
+
+              <label>
+
+                <input
+                  type="checkbox"
+                  name="active"
+                  ${artist.active ? 'checked' : ''}
+                />
+
+                <span>Active</span>
+
+              </label>
+
+              <button
+                class="btn btn-primary"
+                type="submit"
+              >
+                Save Changes
+              </button>
+
+            </form>
+
+          </div>
+        `;
+
+
+        const cancelEditArtist =
+          document.querySelector(
+            '#cancelEditArtist'
+          );
+
+        cancelEditArtist.addEventListener(
+          'click',
+          () => {
+            loadArtistsAdminSection();
+          }
+        );
+
+
+        const adminEditArtistForm =
+          document.querySelector(
+            '#adminEditArtistForm'
+          );
+
+        adminEditArtistForm.addEventListener(
+          'submit',
+          async (event) => {
+            event.preventDefault();
+
+            const formData =
+              new FormData(
+                adminEditArtistForm
+              );
+
+            const artistSlug =
+              formData.get('slug');
+
+            const newArtistPhoto =
+              formData.get('artist_photo');
+
+            const saveChangesButton =
+              adminEditArtistForm.querySelector(
+                'button[type="submit"]'
+              );
+
+            try {
+              saveChangesButton.disabled =
+                true;
+
+              saveChangesButton.textContent =
+                'Saving...';
+
+              let imageUrl =
+                artist.image_url || null;
+
+              if (
+                newArtistPhoto &&
+                newArtistPhoto.size > 0
+              ) {
+                saveChangesButton.textContent =
+                  'Uploading photo...';
+
+                imageUrl =
+                  await uploadArtistPhoto(
+                    newArtistPhoto,
+                    artistSlug
+                  );
+              }
+
+              saveChangesButton.textContent =
+                'Saving changes...';
+
+              const artistData = {
+                name:
+                  formData
+                    .get('name')
+                    .trim(),
+
+                slug:
+                  artistSlug,
+
+                description:
+                  formData
+                    .get('description')
+                    .trim() || null,
+
+                image_url:
+                  imageUrl,
+
+                instagram_url:
+                  formData
+                    .get('instagram_url')
+                    .trim() || null,
+
+                x_url:
+                  formData
+                    .get('x_url')
+                    .trim() || null,
+
+                tiktok_url:
+                  formData
+                    .get('tiktok_url')
+                    .trim() || null,
+
+                updates_url:
+                  formData
+                    .get('updates_url')
+                    .trim() || null,
+
+                sort_order:
+                  Number(
+                    formData.get(
+                      'sort_order'
+                    )
+                  ) || 0,
+
+                active:
+                  formData.get(
+                    'active'
+                  ) === 'on',
+              };
+
+              await updateArtist(
+                artistId,
+                artistData
+              );
+
+              await loadPublicArtists();
+
+              saveChangesButton.textContent =
+                'Saved ✓';
+
+              setTimeout(
+                async () => {
+                  await loadArtistsAdminSection();
+                },
+                700
+              );
+
+            } catch (error) {
+              saveChangesButton.disabled =
+                false;
+
+              saveChangesButton.textContent =
+                'Save Changes';
+
+              console.error(
+                'Unable to update artist:',
+                error
+              );
+            }
+          }
+        );
+      });
+    });
+
+  } catch (error) {
+    adminArtistList.innerHTML = `
+      <p class="admin-panel__placeholder">
+        Unable to load artists.
+      </p>
+    `;
+
+    console.error(
+      'Unable to load artists:',
+      error
+    );
+  }
+
+
+  // ================================
+  // LOAD SITE CONTENT
+  // ================================
+
+  try {
+    const contentItems =
+      await getContent();
+
+    if (contentItems.length === 0) {
+      adminContentList.innerHTML = `
+        <p class="admin-panel__placeholder">
+          No site content yet.
+        </p>
+      `;
+    } else {
+      adminContentList.innerHTML = contentItems
+        .map((content) => {
+          return `
+            <article
+              class="admin-voting-item"
+              data-content-id="${content.id}"
+            >
+
+              <div class="admin-voting-item__info">
+
+                <div class="admin-voting-item__top">
+
+                  <strong class="admin-voting-item__event">
+                    ${content.title || content.content_key}
+                  </strong>
+
+                  <div
+                    style="
+                      display: flex;
+                      gap: 8px;
+                      align-items: center;
+                    "
+                  >
+
+                    ${
+                      content.is_main
+                        ? `
+                          <span class="admin-voting-item__status">
+                            Main
+                          </span>
+                        `
+                        : ''
+                    }
+
+                    <span
+                      class="admin-voting-item__status ${
+                        content.active
+                          ? ''
+                          : 'is-inactive'
+                      }"
+                    >
+                      ${
+                        content.active
+                          ? 'Active'
+                          : 'Inactive'
+                      }
+                    </span>
+
+                  </div>
+
+                </div>
+
+                <span class="admin-voting-item__platform">
+                  ${content.content_key}
+                </span>
+
+                ${
+                  content.subtitle
+                    ? `
+                      <span class="admin-voting-item__meta">
+                        ${content.subtitle}
+                      </span>
+                    `
+                    : ''
+                }
+
+              </div>
+
+              <div class="admin-voting-item__actions">
+
+                ${
+                  content.is_main
+                    ? `
+                      <button
+                        class="btn btn-secondary"
+                        type="button"
+                        data-return-base-content="${content.id}"
+                      >
+                        Return to Base
+                      </button>
+                    `
+                    : `
+                      <button
+                        class="btn btn-secondary"
+                        type="button"
+                        data-set-main-content="${content.id}"
+                      >
+                        Set as Main
+                      </button>
+                    `
+                }
+
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  data-edit-content="${content.id}"
+                >
+                  Edit
+                </button>
+
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  data-delete-content="${content.id}"
+                >
+                  Delete
+                </button>
+
+              </div>
+
+            </article>
+          `;
+        })
+        .join('');
     }
 
-    try {
-      button.disabled = true;
-      button.textContent =
-        'Deleting...';
 
-      await deleteContent(contentId);
+    // ================================
+    // SET CONTENT AS MAIN
+    // ================================
 
-      await loadPublicSiteContent();
-      await loadArtistsAdminSection();
-
-    } catch (error) {
-      button.disabled = false;
-      button.textContent =
-        'Delete';
-
-      console.error(
-        'Unable to delete site content:',
-        error
+    const setMainContentButtons =
+      document.querySelectorAll(
+        '[data-set-main-content]'
       );
-    }
-  });
-});
 
-} catch (error) {
-  adminContentList.innerHTML = `
-    <p class="admin-panel__placeholder">
-      Unable to load site content.
-    </p>
-  `;
+    setMainContentButtons.forEach((button) => {
+      button.addEventListener(
+        'click',
+        async () => {
+          const contentId =
+            Number(
+              button.dataset.setMainContent
+            );
 
-  console.error(
-    'Unable to load site content:',
-    error
-  );
-}
+          const content =
+            contentItems.find(
+              (item) =>
+                item.id === contentId
+            );
+
+          if (!content) {
+            return;
+          }
+
+          try {
+            button.disabled = true;
+            button.textContent =
+              'Setting...';
+
+            await setContentAsMain(
+              contentId,
+              content.content_key
+            );
+
+            await loadPublicSiteContent();
+            await loadArtistsAdminSection();
+
+          } catch (error) {
+            button.disabled = false;
+            button.textContent =
+              'Set as Main';
+
+            console.error(
+              'Unable to set content as main:',
+              error
+            );
+          }
+        }
+      );
+    });
+
+
+    // ================================
+    // RETURN CONTENT TO BASE
+    // ================================
+
+    const returnBaseContentButtons =
+      document.querySelectorAll(
+        '[data-return-base-content]'
+      );
+
+    returnBaseContentButtons.forEach((button) => {
+      button.addEventListener(
+        'click',
+        async () => {
+          const contentId =
+            Number(
+              button.dataset.returnBaseContent
+            );
+
+          const content =
+            contentItems.find(
+              (item) =>
+                item.id === contentId
+            );
+
+          if (!content) {
+            return;
+          }
+
+          try {
+            button.disabled = true;
+            button.textContent =
+              'Returning...';
+
+            await returnContentToBase(
+              content.content_key
+            );
+
+            await loadPublicSiteContent();
+            await loadArtistsAdminSection();
+
+          } catch (error) {
+            button.disabled = false;
+            button.textContent =
+              'Return to Base';
+
+            console.error(
+              'Unable to return content to base:',
+              error
+            );
+          }
+        }
+      );
+    });
+
+
+    // ================================
+    // EDIT CONTENT
+    // ================================
+
+    const editContentButtons =
+      document.querySelectorAll(
+        '[data-edit-content]'
+      );
+
+    editContentButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const contentId =
+          Number(
+            button.dataset.editContent
+          );
+
+        const content =
+          contentItems.find(
+            (item) =>
+              item.id === contentId
+          );
+
+        if (!content) {
+          return;
+        }
+
+        adminPanelBody.innerHTML = `
+          <div class="admin-form-view">
+
+            <div class="admin-form-view__header">
+
+              <div>
+
+                <span class="eyebrow">
+                  CONTENT
+                </span>
+
+                <h3 class="admin-section-header__title">
+                  Edit Site Content
+                </h3>
+
+                <p class="admin-section-header__description">
+                  Update this public website content.
+                </p>
+
+              </div>
+
+              <button
+                class="btn btn-secondary"
+                type="button"
+                id="cancelEditContent"
+              >
+                ← Cancel
+              </button>
+
+            </div>
+
+            <form
+              class="admin-voting-form"
+              id="adminEditContentForm"
+            >
+
+              <label>
+                <span>Content Area</span>
+
+                <select
+                  name="content_key"
+                  id="editContentArea"
+                  required
+                >
+                  <option
+                    value="hero_main"
+                    ${content.content_key === 'hero_main' ? 'selected' : ''}
+                  >
+                    Hero
+                  </option>
+
+                  <option
+                    value="artists_intro"
+                    ${content.content_key === 'artists_intro' ? 'selected' : ''}
+                  >
+                    Artists Section Intro
+                  </option>
+
+                  <option
+                    value="tutorials_intro"
+                    ${content.content_key === 'tutorials_intro' ? 'selected' : ''}
+                  >
+                    Tutorials Section Intro
+                  </option>
+
+                  <option
+                    value="watch_intro"
+                    ${content.content_key === 'watch_intro' ? 'selected' : ''}
+                  >
+                    Watch & Results Intro
+                  </option>
+
+                  <option
+                    value="support_intro"
+                    ${content.content_key === 'support_intro' ? 'selected' : ''}
+                  >
+                    Support Section Intro
+                  </option>
+
+                </select>
+              </label>
+
+              <label>
+                <span>Title</span>
+
+                <input
+                  type="text"
+                  name="title"
+                  value="${content.title ?? ''}"
+                />
+              </label>
+
+              <label style="grid-column: 1 / -1;">
+                <span>Subtitle</span>
+
+                <input
+                  type="text"
+                  name="subtitle"
+                  value="${content.subtitle ?? ''}"
+                />
+              </label>
+
+              <label style="grid-column: 1 / -1;">
+                <span>Body</span>
+
+                <textarea
+                  name="body"
+                  rows="5"
+                >${content.body ?? ''}</textarea>
+              </label>
+
+              <div
+                id="editContentButtonFields"
+                style="display: none; grid-column: 1 / -1;"
+              >
+
+                <label>
+                  <span>Primary Button Label</span>
+
+                  <input
+                    type="text"
+                    name="button_label"
+                    value="${content.button_label ?? ''}"
+                    placeholder="Start Voting"
+                  />
+                </label>
+
+                <label>
+                  <span>Primary Button URL</span>
+
+                  <input
+                    type="text"
+                    name="button_url"
+                    value="${content.button_url ?? ''}"
+                    placeholder="#vote"
+                  />
+                </label>
+
+                <label>
+                  <span>Secondary Button Label</span>
+
+                  <input
+                    type="text"
+                    name="secondary_button_label"
+                    value="${content.secondary_button_label ?? ''}"
+                    placeholder="View Tutorials"
+                  />
+                </label>
+
+                <label>
+                  <span>Secondary Button URL</span>
+
+                  <input
+                    type="text"
+                    name="secondary_button_url"
+                    value="${content.secondary_button_url ?? ''}"
+                    placeholder="#tutorials"
+                  />
+                </label>
+
+              </div>
+
+              <label>
+
+                <input
+                  type="checkbox"
+                  name="active"
+                  ${content.active ? 'checked' : ''}
+                />
+
+                <span>Active</span>
+
+              </label>
+
+              <button
+                class="btn btn-primary"
+                type="submit"
+              >
+                Save Changes
+              </button>
+
+            </form>
+
+          </div>
+        `;
+
+
+        // ================================
+        // SHOW BUTTON FIELDS ONLY FOR HERO
+        // ================================
+
+        const editContentArea =
+          document.querySelector(
+            '#editContentArea'
+          );
+
+        const editContentButtonFields =
+          document.querySelector(
+            '#editContentButtonFields'
+          );
+
+        function updateEditContentFields() {
+          const isHero =
+            editContentArea.value === 'hero_main';
+
+          editContentButtonFields.style.display =
+            isHero ? 'grid' : 'none';
+        }
+
+        updateEditContentFields();
+
+        editContentArea.addEventListener(
+          'change',
+          updateEditContentFields
+        );
+
+
+        // ================================
+        // CANCEL
+        // ================================
+
+        const cancelEditContent =
+          document.querySelector(
+            '#cancelEditContent'
+          );
+
+        cancelEditContent.addEventListener(
+          'click',
+          () => {
+            loadArtistsAdminSection();
+          }
+        );
+
+
+        // ================================
+        // SAVE EDIT
+        // ================================
+
+        const adminEditContentForm =
+          document.querySelector(
+            '#adminEditContentForm'
+          );
+
+        adminEditContentForm.addEventListener(
+          'submit',
+          async (event) => {
+            event.preventDefault();
+
+            const formData =
+              new FormData(
+                adminEditContentForm
+              );
+
+            const contentKey =
+              formData
+                .get('content_key')
+                .trim();
+
+            const isHero =
+              contentKey === 'hero_main';
+
+            const contentData = {
+              content_key:
+                contentKey,
+
+              title:
+                formData
+                  .get('title')
+                  .trim() || null,
+
+              subtitle:
+                formData
+                  .get('subtitle')
+                  .trim() || null,
+
+              body:
+                formData
+                  .get('body')
+                  .trim() || null,
+
+              button_label:
+                isHero
+                  ? formData
+                      .get('button_label')
+                      .trim() || null
+                  : null,
+
+              button_url:
+                isHero
+                  ? formData
+                      .get('button_url')
+                      .trim() || null
+                  : null,
+
+              secondary_button_label:
+                isHero
+                  ? formData
+                      .get(
+                        'secondary_button_label'
+                      )
+                      .trim() || null
+                  : null,
+
+              secondary_button_url:
+                isHero
+                  ? formData
+                      .get(
+                        'secondary_button_url'
+                      )
+                      .trim() || null
+                  : null,
+
+              image_url:
+                null,
+
+              active:
+                formData.get(
+                  'active'
+                ) === 'on',
+            };
+
+            const saveChangesButton =
+              adminEditContentForm.querySelector(
+                'button[type="submit"]'
+              );
+
+            try {
+              saveChangesButton.disabled =
+                true;
+
+              saveChangesButton.textContent =
+                'Saving...';
+
+              await updateContent(
+                contentId,
+                contentData
+              );
+
+              await loadPublicSiteContent();
+
+              saveChangesButton.textContent =
+                'Saved ✓';
+
+              setTimeout(
+                async () => {
+                  await loadArtistsAdminSection();
+                },
+                700
+              );
+
+            } catch (error) {
+              saveChangesButton.disabled =
+                false;
+
+              saveChangesButton.textContent =
+                'Save Changes';
+
+              console.error(
+                'Unable to update site content:',
+                error
+              );
+            }
+          }
+        );
+      });
+    });
+
+
+    // ================================
+    // DELETE CONTENT
+    // ================================
+
+    const deleteContentButtons =
+      document.querySelectorAll(
+        '[data-delete-content]'
+      );
+
+    deleteContentButtons.forEach((button) => {
+      button.addEventListener(
+        'click',
+        async () => {
+          const contentId =
+            Number(
+              button.dataset.deleteContent
+            );
+
+          const content =
+            contentItems.find(
+              (item) =>
+                item.id === contentId
+            );
+
+          if (!content) {
+            return;
+          }
+
+          const confirmed =
+            window.confirm(
+              `Delete "${content.title || content.content_key}"? This action cannot be undone.`
+            );
+
+          if (!confirmed) {
+            return;
+          }
+
+          try {
+            button.disabled = true;
+            button.textContent =
+              'Deleting...';
+
+            await deleteContent(
+              contentId
+            );
+
+            await loadPublicSiteContent();
+            await loadArtistsAdminSection();
+
+          } catch (error) {
+            button.disabled = false;
+            button.textContent =
+              'Delete';
+
+            console.error(
+              'Unable to delete site content:',
+              error
+            );
+          }
+        }
+      );
+    });
+
+  } catch (error) {
+    adminContentList.innerHTML = `
+      <p class="admin-panel__placeholder">
+        Unable to load site content.
+      </p>
+    `;
+
+    console.error(
+      'Unable to load site content:',
+      error
+    );
+  }
 }
 // ================================
 // ADMIN PANEL SETUP
@@ -4065,7 +5238,7 @@ async function loadVotingAdminSection() {
             type="button"
             id="cancelAddVoting"
           >
-            Cancel
+          ← Cancel
           </button>
 
         </div>
@@ -4290,8 +5463,9 @@ async function loadVotingAdminSection() {
         try {
           await createVotingPlatform(votingData);
 
-          await loadVotingAdminSection();
-          await loadPublicVotingPlatforms();
+await loadVotingAdminSection();
+await loadPublicVotingPlatforms();
+await loadPublicTutorials();
 
         } catch (error) {
           console.error(
@@ -4430,7 +5604,7 @@ editVotingButtons.forEach((button) => {
             type="button"
             id="cancelEditVoting"
           >
-            Cancel
+          ← Cancel
           </button>
 
         </div>
@@ -4692,10 +5866,12 @@ editVotingButtons.forEach((button) => {
           saveChangesButton.textContent = 'Saving...';
 
           await updateVotingPlatform(
-            votingId,
-            votingData
-          );
-          await loadPublicVotingPlatforms();
+  votingId,
+  votingData
+);
+
+await loadPublicVotingPlatforms();
+await loadPublicTutorials();
 
           saveChangesButton.textContent = 'Saved ✓';
 
@@ -4753,6 +5929,7 @@ deleteVotingButtons.forEach((button) => {
 
 await loadVotingAdminSection();
 await loadPublicVotingPlatforms();
+await loadPublicTutorials();
 
     } catch (error) {
       button.disabled = false;
@@ -4853,7 +6030,7 @@ async function loadTutorialAdminSection() {
             type="button"
             id="cancelAddTutorial"
           >
-            Cancel
+          ← Cancel
           </button>
 
         </div>
@@ -5021,18 +6198,67 @@ try {
   const tutorials =
     await getTutorials();
 
-  if (tutorials.length === 0) {
-    adminTutorialList.innerHTML = `
-      <p class="admin-panel__placeholder">
-        No tutorials yet.
-      </p>
-    `;
+  const votingPlatforms =
+    await getVotingPlatforms();
 
-    return;
-  }
+  const votingTutorials =
+    votingPlatforms
+      .filter(
+        (platform) =>
+          platform.tutorial_url
+      )
+      .map((platform) => {
+        return {
+          id: `voting-${platform.id}`,
 
-  adminTutorialList.innerHTML = tutorials
-    .map((tutorial) => {
+          title:
+            platform.event,
+
+          description:
+            `Voting guide for ${platform.platform}.`,
+
+          tutorial_url:
+            platform.tutorial_url,
+
+          tutorial_type:
+            detectTutorialType(
+              platform.tutorial_url
+            ),
+
+          sort_order:
+            platform.sort_order ?? 0,
+
+          active:
+            platform.active,
+
+          source:
+            'voting',
+
+          voting_id:
+            platform.id,
+        };
+      });
+
+  const combinedTutorials = [
+    ...tutorials.map((tutorial) => ({
+      ...tutorial,
+      source: 'manual',
+    })),
+    ...votingTutorials,
+  ];
+
+  if (combinedTutorials.length === 0) {
+  adminTutorialList.innerHTML = `
+    <p class="admin-panel__placeholder">
+      No tutorials yet.
+    </p>
+  `;
+
+  return;
+}
+
+adminTutorialList.innerHTML = combinedTutorials
+  .map((tutorial) => {
       return `
         <article
           class="admin-voting-item"
@@ -5071,23 +6297,37 @@ try {
 
           <div class="admin-voting-item__actions">
 
-            <button
-              class="btn btn-secondary"
-              type="button"
-              data-edit-tutorial="${tutorial.id}"
-            >
-              Edit
-            </button>
+  ${
+    tutorial.source === 'voting'
+      ? `
+        <button
+          class="btn btn-secondary"
+          type="button"
+          data-edit-voting-from-tutorial="${tutorial.voting_id}"
+        >
+          Edit Voting
+        </button>
+      `
+      : `
+        <button
+          class="btn btn-secondary"
+          type="button"
+          data-edit-tutorial="${tutorial.id}"
+        >
+          Edit
+        </button>
 
-            <button
-              class="btn btn-secondary"
-              type="button"
-              data-delete-tutorial="${tutorial.id}"
-            >
-              Delete
-            </button>
+        <button
+          class="btn btn-secondary"
+          type="button"
+          data-delete-tutorial="${tutorial.id}"
+        >
+          Delete
+        </button>
+      `
+  }
 
-          </div>
+</div>
 
         </article>
       `;
@@ -5138,7 +6378,7 @@ try {
               type="button"
               id="cancelEditTutorial"
             >
-              Cancel
+            ← Cancel
             </button>
 
           </div>
@@ -5341,54 +6581,103 @@ try {
   });
 
 
-  // ================================
-  // DELETE TUTORIAL
-  // ================================
+// ================================
+// DELETE TUTORIAL
+// ================================
 
-  const deleteTutorialButtons =
-    document.querySelectorAll('[data-delete-tutorial]');
+const deleteTutorialButtons =
+  document.querySelectorAll('[data-delete-tutorial]');
 
-  deleteTutorialButtons.forEach((button) => {
-    button.addEventListener('click', async () => {
-      const tutorialId =
-        Number(button.dataset.deleteTutorial);
+deleteTutorialButtons.forEach((button) => {
+  button.addEventListener('click', async () => {
+    const tutorialId =
+      Number(button.dataset.deleteTutorial);
 
-      const tutorial =
-        tutorials.find((item) => item.id === tutorialId);
+    const tutorial =
+      tutorials.find(
+        (item) =>
+          item.id === tutorialId
+      );
 
-      if (!tutorial) {
-        return;
-      }
+    if (!tutorial) {
+      return;
+    }
 
-      const confirmed =
-        window.confirm(
-          `Delete "${tutorial.title}"? This action cannot be undone.`
-        );
+    const confirmed =
+      window.confirm(
+        `Delete "${tutorial.title}"? This action cannot be undone.`
+      );
 
-      if (!confirmed) {
-        return;
-      }
+    if (!confirmed) {
+      return;
+    }
 
-      try {
-        button.disabled = true;
-        button.textContent = 'Deleting...';
+    try {
+      button.disabled = true;
+      button.textContent = 'Deleting...';
 
-        await deleteTutorial(tutorialId);
+      await deleteTutorial(
+        tutorialId
+      );
 
-        await loadTutorialAdminSection();
-        await loadPublicTutorials();
+      await loadTutorialAdminSection();
+      await loadPublicTutorials();
 
-      } catch (error) {
-        button.disabled = false;
-        button.textContent = 'Delete';
+    } catch (error) {
+      button.disabled = false;
+      button.textContent = 'Delete';
 
-        console.error(
-          'Unable to delete tutorial:',
-          error
-        );
-      }
-    });
+      console.error(
+        'Unable to delete tutorial:',
+        error
+      );
+    }
   });
+});
+
+
+// ================================
+// EDIT VOTING FROM TUTORIAL
+// ================================
+
+const editVotingFromTutorialButtons =
+  document.querySelectorAll(
+    '[data-edit-voting-from-tutorial]'
+  );
+
+editVotingFromTutorialButtons.forEach((button) => {
+  button.addEventListener(
+    'click',
+    async () => {
+      const votingId =
+        Number(
+          button.dataset.editVotingFromTutorial
+        );
+
+      const platforms =
+        await getVotingPlatforms();
+
+      const platform =
+        platforms.find(
+          (item) =>
+            item.id === votingId
+        );
+
+      if (!platform) {
+        return;
+      }
+
+      await loadVotingAdminSection();
+
+      const editVotingButton =
+        document.querySelector(
+          `[data-edit-voting="${votingId}"]`
+        );
+
+      editVotingButton?.click();
+    }
+  );
+});
 
 } catch (error) {
   adminTutorialList.innerHTML = `
@@ -5478,7 +6767,7 @@ async function loadSupportAdminSection() {
             type="button"
             id="cancelAddSupport"
           >
-            Cancel
+          ← Cancel
           </button>
 
         </div>
@@ -5950,7 +7239,7 @@ adminSupportList.innerHTML = settings
                     type="button"
                     id="cancelAddDonationLink"
                   >
-                    Cancel
+                  ← Cancel
                   </button>
 
                 </div>
@@ -6189,7 +7478,7 @@ adminSupportList.innerHTML = settings
                     type="button"
                     id="cancelEditDonationLink"
                   >
-                    Cancel
+                  ← Cancel
                   </button>
 
                 </div>
@@ -6513,7 +7802,7 @@ adminSupportList.innerHTML = settings
                     type="button"
                     id="cancelEditSupport"
                   >
-                    Cancel
+                  ← Cancel
                   </button>
 
                 </div>
@@ -6911,6 +8200,888 @@ adminSupportList.innerHTML = settings
     );
   }
 }
+
+// ================================
+// WATCH & RESULTS ADMIN
+// ================================
+
+async function loadWatchAdminSection() {
+  adminPanelBody.innerHTML = `
+    <div class="admin-section-header">
+
+      <div>
+
+        <h3 class="admin-section-header__title">
+          Watch & Results
+        </h3>
+
+        <p class="admin-section-header__description">
+          Manage live stream links and official result pages.
+        </p>
+
+      </div>
+
+      <button
+        class="btn btn-primary"
+        type="button"
+        id="addWatchButton"
+      >
+        + Add Watch / Result
+      </button>
+
+    </div>
+
+    <div id="adminWatchList">
+
+      <p class="admin-panel__placeholder">
+        Loading Watch & Results...
+      </p>
+
+    </div>
+  `;
+
+  const adminWatchList =
+    document.querySelector('#adminWatchList');
+
+  const addWatchButton =
+    document.querySelector('#addWatchButton');
+
+  try {
+    const watchLinks =
+      await getWatchLinks();
+
+    if (watchLinks.length === 0) {
+      adminWatchList.innerHTML = `
+        <p class="admin-panel__placeholder">
+          No Watch & Results entries yet.
+        </p>
+      `;
+    } else {
+      adminWatchList.innerHTML = watchLinks
+        .map((item) => {
+          return `
+            <article
+              class="admin-voting-item"
+              data-watch-id="${item.id}"
+            >
+
+              <div class="admin-voting-item__info">
+
+                <div class="admin-voting-item__top">
+
+                  <strong class="admin-voting-item__event">
+                    ${item.title}
+                  </strong>
+
+                  <span class="admin-voting-item__status">
+                    ${item.active ? 'Active' : 'Inactive'}
+                  </span>
+
+                </div>
+
+                <span class="admin-voting-item__platform">
+                  ${
+                    item.type === 'live'
+                      ? 'Live'
+                      : 'Results'
+                  }
+
+                  ${
+                    item.platform
+                      ? ` · ${item.platform}`
+                      : ''
+                  }
+                </span>
+
+                ${
+                  item.scheduled_at
+                    ? `
+                      <span class="admin-voting-item__meta">
+                        ${new Date(
+                          item.scheduled_at
+                        ).toLocaleString()}
+                      </span>
+                    `
+                    : ''
+                }
+
+              </div>
+
+              <div class="admin-voting-item__actions">
+
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  data-edit-watch="${item.id}"
+                >
+                  Edit
+                </button>
+
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  data-delete-watch="${item.id}"
+                >
+                  Delete
+                </button>
+
+              </div>
+
+            </article>
+          `;
+        })
+        .join('');
+
+
+      // ================================
+      // EDIT WATCH / RESULT
+      // ================================
+
+      const editWatchButtons =
+        document.querySelectorAll(
+          '[data-edit-watch]'
+        );
+
+      editWatchButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const watchId =
+            Number(
+              button.dataset.editWatch
+            );
+
+          const item =
+            watchLinks.find(
+              (entry) =>
+                entry.id === watchId
+            );
+
+          if (!item) {
+            return;
+          }
+
+          const dateParts =
+            item.scheduled_at
+              ? new Intl.DateTimeFormat(
+                  'en-CA',
+                  {
+                    timeZone: 'Asia/Bangkok',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hourCycle: 'h23',
+                  }
+                )
+                  .formatToParts(
+                    new Date(
+                      item.scheduled_at
+                    )
+                  )
+                  .reduce(
+                    (parts, part) => {
+                      parts[part.type] =
+                        part.value;
+
+                      return parts;
+                    },
+                    {}
+                  )
+              : null;
+
+          const scheduledValue =
+            dateParts
+              ? `${dateParts.year}-${dateParts.month}-${dateParts.day}T${dateParts.hour}:${dateParts.minute}`
+              : '';
+
+          adminPanelBody.innerHTML = `
+            <div class="admin-form-view">
+
+              <div class="admin-form-view__header">
+
+                <div>
+
+                  <span class="eyebrow">
+                    WATCH & RESULTS
+                  </span>
+
+                  <h3 class="admin-section-header__title">
+                    Edit Watch / Result
+                  </h3>
+
+                  <p class="admin-section-header__description">
+                    Update this live stream or results page.
+                  </p>
+
+                </div>
+
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  id="cancelEditWatch"
+                >
+                  ← Cancel
+                </button>
+
+              </div>
+
+              <form
+                class="admin-voting-form"
+                id="adminEditWatchForm"
+              >
+
+                <label>
+                  <span>Type</span>
+
+                  <select
+                    name="type"
+                    required
+                  >
+                    <option
+                      value="live"
+                      ${item.type === 'live' ? 'selected' : ''}
+                    >
+                      Live / Watch
+                    </option>
+
+                    <option
+                      value="result"
+                      ${item.type === 'result' ? 'selected' : ''}
+                    >
+                      Results
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Title</span>
+
+                  <input
+                    type="text"
+                    name="title"
+                    value="${item.title ?? ''}"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>Description</span>
+
+                  <textarea
+                    name="description"
+                    rows="3"
+                  >${item.description ?? ''}</textarea>
+                </label>
+
+                <label>
+                  <span>Platform</span>
+
+                  <input
+                    type="text"
+                    name="platform"
+                    value="${item.platform ?? ''}"
+                  />
+                </label>
+
+                <label>
+                  <span>Link</span>
+
+                  <input
+                    type="url"
+                    name="url"
+                    value="${item.url ?? ''}"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>Date & Time — Thailand</span>
+
+                  <input
+                    type="datetime-local"
+                    name="scheduled_at"
+                    value="${scheduledValue}"
+                  />
+                </label>
+
+                <label>
+                  <span>Thumbnail URL</span>
+
+                  <input
+                    type="url"
+                    name="thumbnail_url"
+                    value="${item.thumbnail_url ?? ''}"
+                  />
+                </label>
+
+                <label>
+                  <span>Button label</span>
+
+                  <input
+                    type="text"
+                    name="button_label"
+                    value="${item.button_label ?? ''}"
+                  />
+                </label>
+
+                <label>
+                  <span>Sort order</span>
+
+                  <input
+                    type="number"
+                    name="sort_order"
+                    value="${item.sort_order ?? 0}"
+                  />
+                </label>
+
+                <label>
+
+                  <input
+                    type="checkbox"
+                    name="active"
+                    ${item.active ? 'checked' : ''}
+                  />
+
+                  <span>Active</span>
+
+                </label>
+
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                >
+                  Save Changes
+                </button>
+
+              </form>
+
+            </div>
+          `;
+
+          const cancelEditWatch =
+            document.querySelector(
+              '#cancelEditWatch'
+            );
+
+          cancelEditWatch.addEventListener(
+            'click',
+            () => {
+              loadWatchAdminSection();
+            }
+          );
+
+          const adminEditWatchForm =
+            document.querySelector(
+              '#adminEditWatchForm'
+            );
+
+          adminEditWatchForm.addEventListener(
+            'submit',
+            async (event) => {
+              event.preventDefault();
+
+              const formData =
+                new FormData(
+                  adminEditWatchForm
+                );
+
+              const type =
+                formData.get('type');
+
+              const thailandDateTime =
+                formData.get(
+                  'scheduled_at'
+                );
+
+              let scheduledAt = null;
+
+              if (thailandDateTime) {
+                scheduledAt = new Date(
+                  `${thailandDateTime}:00+07:00`
+                ).toISOString();
+              }
+
+              const watchData = {
+                type,
+
+                title:
+                  formData
+                    .get('title')
+                    .trim(),
+
+                description:
+                  formData
+                    .get('description')
+                    .trim() || null,
+
+                platform:
+                  formData
+                    .get('platform')
+                    .trim() || null,
+
+                url:
+                  formData
+                    .get('url')
+                    .trim(),
+
+                scheduled_at:
+                  scheduledAt,
+
+                thumbnail_url:
+                  formData
+                    .get('thumbnail_url')
+                    .trim() || null,
+
+                button_label:
+                  formData
+                    .get('button_label')
+                    .trim() ||
+                  (
+                    type === 'live'
+                      ? 'Watch Live'
+                      : 'View Results'
+                  ),
+
+                sort_order:
+                  Number(
+                    formData.get(
+                      'sort_order'
+                    )
+                  ) || 0,
+
+                active:
+                  formData.get(
+                    'active'
+                  ) === 'on',
+              };
+
+              const saveChangesButton =
+                adminEditWatchForm
+                  .querySelector(
+                    'button[type="submit"]'
+                  );
+
+              try {
+                saveChangesButton.disabled =
+                  true;
+
+                saveChangesButton.textContent =
+                  'Saving...';
+
+                await updateWatchLink(
+                  watchId,
+                  watchData
+                );
+
+                await loadPublicWatchLinks();
+
+                saveChangesButton.textContent =
+                  'Saved ✓';
+
+                setTimeout(
+                  async () => {
+                    await loadWatchAdminSection();
+                  },
+                  600
+                );
+
+              } catch (error) {
+                saveChangesButton.disabled =
+                  false;
+
+                saveChangesButton.textContent =
+                  'Save Changes';
+
+                console.error(
+                  'Unable to update Watch & Results entry:',
+                  error
+                );
+              }
+            }
+          );
+        });
+      });
+
+
+      // ================================
+      // DELETE WATCH / RESULT
+      // ================================
+
+      const deleteWatchButtons =
+        document.querySelectorAll(
+          '[data-delete-watch]'
+        );
+
+      deleteWatchButtons.forEach((button) => {
+        button.addEventListener(
+          'click',
+          async () => {
+            const watchId =
+              Number(
+                button.dataset.deleteWatch
+              );
+
+            const item =
+              watchLinks.find(
+                (entry) =>
+                  entry.id === watchId
+              );
+
+            if (!item) {
+              return;
+            }
+
+            const confirmed =
+              window.confirm(
+                `Delete "${item.title}"?\n\nThis action cannot be undone.`
+              );
+
+            if (!confirmed) {
+              return;
+            }
+
+            try {
+              button.disabled = true;
+              button.textContent =
+                'Deleting...';
+
+              await deleteWatchLink(
+                watchId
+              );
+
+              await loadPublicWatchLinks();
+              await loadWatchAdminSection();
+
+            } catch (error) {
+              button.disabled = false;
+              button.textContent =
+                'Delete';
+
+              console.error(
+                'Unable to delete Watch & Results entry:',
+                error
+              );
+            }
+          }
+        );
+      });
+    }
+
+  } catch (error) {
+    adminWatchList.innerHTML = `
+      <p class="admin-panel__placeholder">
+        Unable to load Watch & Results.
+      </p>
+    `;
+
+    console.error(
+      'Unable to load Watch & Results:',
+      error
+    );
+  }
+
+
+  // ================================
+  // ADD WATCH / RESULT
+  // ================================
+
+  addWatchButton.addEventListener('click', () => {
+    adminPanelBody.innerHTML = `
+      <div class="admin-form-view">
+
+        <div class="admin-form-view__header">
+
+          <div>
+
+            <span class="eyebrow">
+              WATCH & RESULTS
+            </span>
+
+            <h3 class="admin-section-header__title">
+              Add Watch / Result
+            </h3>
+
+            <p class="admin-section-header__description">
+              Add a live stream or an official results page.
+            </p>
+
+          </div>
+
+          <button
+            class="btn btn-secondary"
+            type="button"
+            id="cancelAddWatch"
+          >
+            ← Cancel
+          </button>
+
+        </div>
+
+        <form
+          class="admin-voting-form"
+          id="adminWatchForm"
+        >
+
+          <label>
+            <span>Type</span>
+
+            <select
+              name="type"
+              required
+            >
+              <option value="live">
+                Live / Watch
+              </option>
+
+              <option value="result">
+                Results
+              </option>
+            </select>
+          </label>
+
+          <label>
+            <span>Title</span>
+
+            <input
+              type="text"
+              name="title"
+              placeholder="Example: LMSY Live at Y Entertain Awards"
+              required
+            />
+          </label>
+
+          <label>
+            <span>Description</span>
+
+            <textarea
+              name="description"
+              rows="3"
+              placeholder="Optional short description"
+            ></textarea>
+          </label>
+
+          <label>
+            <span>Platform</span>
+
+            <input
+              type="text"
+              name="platform"
+              placeholder="YouTube, Facebook, Instagram, Website..."
+            />
+          </label>
+
+          <label>
+            <span>Link</span>
+
+            <input
+              type="url"
+              name="url"
+              required
+            />
+          </label>
+
+          <label>
+            <span>Date & Time — Thailand</span>
+
+            <input
+              type="datetime-local"
+              name="scheduled_at"
+            />
+          </label>
+
+          <label>
+            <span>Thumbnail URL</span>
+
+            <input
+              type="url"
+              name="thumbnail_url"
+              placeholder="Optional"
+            />
+          </label>
+
+          <label>
+            <span>Button label</span>
+
+            <input
+              type="text"
+              name="button_label"
+              placeholder="Example: Watch Live"
+            />
+          </label>
+
+          <label>
+            <span>Sort order</span>
+
+            <input
+              type="number"
+              name="sort_order"
+              value="0"
+            />
+          </label>
+
+          <label>
+
+            <input
+              type="checkbox"
+              name="active"
+              checked
+            />
+
+            <span>Active</span>
+
+          </label>
+
+          <button
+            class="btn btn-primary"
+            type="submit"
+          >
+            Save
+          </button>
+
+        </form>
+
+      </div>
+    `;
+
+    const cancelAddWatch =
+      document.querySelector(
+        '#cancelAddWatch'
+      );
+
+    cancelAddWatch.addEventListener(
+      'click',
+      () => {
+        loadWatchAdminSection();
+      }
+    );
+
+    const adminWatchForm =
+      document.querySelector(
+        '#adminWatchForm'
+      );
+
+    adminWatchForm.addEventListener(
+      'submit',
+      async (event) => {
+        event.preventDefault();
+
+        const formData =
+          new FormData(
+            adminWatchForm
+          );
+
+        const type =
+          formData.get('type');
+
+        const thailandDateTime =
+          formData.get(
+            'scheduled_at'
+          );
+
+        let scheduledAt = null;
+
+        if (thailandDateTime) {
+          scheduledAt = new Date(
+            `${thailandDateTime}:00+07:00`
+          ).toISOString();
+        }
+
+        const watchData = {
+          type,
+
+          title:
+            formData
+              .get('title')
+              .trim(),
+
+          description:
+            formData
+              .get('description')
+              .trim() || null,
+
+          platform:
+            formData
+              .get('platform')
+              .trim() || null,
+
+          url:
+            formData
+              .get('url')
+              .trim(),
+
+          scheduled_at:
+            scheduledAt,
+
+          thumbnail_url:
+            formData
+              .get('thumbnail_url')
+              .trim() || null,
+
+          button_label:
+            formData
+              .get('button_label')
+              .trim() ||
+            (
+              type === 'live'
+                ? 'Watch Live'
+                : 'View Results'
+            ),
+
+          sort_order:
+            Number(
+              formData.get(
+                'sort_order'
+              )
+            ) || 0,
+
+          active:
+            formData.get(
+              'active'
+            ) === 'on',
+        };
+
+        const saveButton =
+          adminWatchForm.querySelector(
+            'button[type="submit"]'
+          );
+
+        try {
+          saveButton.disabled = true;
+          saveButton.textContent =
+            'Saving...';
+
+          await createWatchLink(
+            watchData
+          );
+
+          await loadPublicWatchLinks();
+
+          saveButton.textContent =
+            'Saved ✓';
+
+          setTimeout(
+            async () => {
+              await loadWatchAdminSection();
+            },
+            600
+          );
+
+        } catch (error) {
+          saveButton.disabled = false;
+          saveButton.textContent =
+            'Save';
+
+          console.error(
+            'Unable to create Watch & Results entry:',
+            error
+          );
+        }
+      }
+    );
+  });
+}
+
+
 // ================================
 // ADMIN PANEL NAVIGATION
 // ================================
@@ -6939,15 +9110,20 @@ adminNavItems.forEach((item) => {
       return;
     }
 
-if (sectionName === 'Support') {
-  await loadSupportAdminSection();
-  return;
-}
+    if (sectionName === 'Watch & Results') {
+      await loadWatchAdminSection();
+      return;
+    }
+
+    if (sectionName === 'Support') {
+      await loadSupportAdminSection();
+      return;
+    }
 
     if (sectionName === 'Artists & Content') {
-  await loadArtistsAdminSection();
-  return;
-}
+      await loadArtistsAdminSection();
+      return;
+    }
 
     adminPanelBody.innerHTML = `
       <p class="admin-panel__placeholder">
@@ -6957,69 +9133,21 @@ if (sectionName === 'Support') {
   });
 });
 
-// ================================
-// DELETE SUPPORT FUND
-// ================================
 
-const deleteSupportButtons =
-  document.querySelectorAll(
-    '[data-delete-support]'
-  );
+loadPublicWatchLinks();
 
-deleteSupportButtons.forEach((button) => {
-  button.addEventListener('click', async () => {
-    const supportId =
-      Number(
-        button.dataset.deleteSupport
-      );
-
-    const support =
-      settings.find(
-        (item) =>
-          item.id === supportId
-      );
-
-    if (!support) {
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        `Delete "${support.title || 'Voting Fund'}"? This action cannot be undone.`
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      button.disabled = true;
-      button.textContent =
-        'Deleting...';
-
-      await deleteDonationSetting(
-        supportId
-      );
-
-      await loadPublicSupport();
-      await loadSupportAdminSection();
-
-    } catch (error) {
-      button.disabled = false;
-      button.textContent =
-        'Delete';
-
-      console.error(
-        'Unable to delete support fund:',
-        error
-      );
-    }
-  });
-});
 
 // ================================
 // RESTORE ADMIN SESSION
 // ================================
+
+let isAdminPasswordRecovery = false;
+
+listenForAdminPasswordRecovery(() => {
+  isAdminPasswordRecovery = true;
+
+  showAdminSetNewPasswordForm();
+});
 
 async function restoreAdminSession() {
   try {
@@ -7027,6 +9155,10 @@ async function restoreAdminSession() {
       await getCurrentAdminSession();
 
     if (!sessionData) {
+      return;
+    }
+
+    if (isAdminPasswordRecovery) {
       return;
     }
 
@@ -7044,4 +9176,3 @@ async function restoreAdminSession() {
 }
 
 restoreAdminSession();
-
