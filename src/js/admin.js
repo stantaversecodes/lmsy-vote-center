@@ -86,10 +86,35 @@ export async function updateVotingPlatform(id, votingData) {
 }
 
 export async function deleteVotingPlatform(id) {
-  const { error } = await supabase
-    .from('lmsy_platforms')
+  // Delete any translations connected
+  // to this voting first.
+
+  const {
+    error: translationError,
+  } = await supabase
+    .from('lmsy_translations')
     .delete()
-    .eq('id', id);
+    .eq(
+      'content_type',
+      'voting'
+    )
+    .eq(
+      'content_id',
+      id
+    );
+
+  if (translationError) {
+    throw translationError;
+  }
+
+
+  // Delete the voting platform.
+
+  const { error } =
+    await supabase
+      .from('lmsy_platforms')
+      .delete()
+      .eq('id', id);
 
   if (error) {
     throw error;
@@ -230,10 +255,34 @@ export async function updateArtist(id, artistData) {
 }
 
 export async function deleteArtist(id) {
-  const { error } = await supabase
-    .from('lmsy_artists')
+  // Delete artist translations first.
+
+  const {
+    error: translationError,
+  } = await supabase
+    .from('lmsy_translations')
     .delete()
-    .eq('id', id);
+    .eq(
+      'content_type',
+      'artist'
+    )
+    .eq(
+      'content_id',
+      id
+    );
+
+  if (translationError) {
+    throw translationError;
+  }
+
+
+  // Delete the artist.
+
+  const { error } =
+    await supabase
+      .from('lmsy_artists')
+      .delete()
+      .eq('id', id);
 
   if (error) {
     throw error;
@@ -655,4 +704,247 @@ export async function deleteWatchLink(watchId) {
   if (error) {
     throw error;
   }
+}
+
+// ================================
+// TRANSLATIONS
+// ================================
+
+export async function getTranslations(
+  contentType,
+  contentId
+) {
+  const { data, error } = await supabase
+    .from('lmsy_translations')
+    .select('*')
+    .eq('content_type', contentType)
+    .eq('content_id', contentId)
+    .order('language', {
+      ascending: true,
+    })
+    .order('field_name', {
+      ascending: true,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}
+
+export async function getTranslationsByType(
+  contentType
+) {
+  const { data, error } = await supabase
+    .from('lmsy_translations')
+    .select('*')
+    .eq('content_type', contentType)
+    .order('content_id', {
+      ascending: true,
+    })
+    .order('language', {
+      ascending: true,
+    })
+    .order('field_name', {
+      ascending: true,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}
+
+export async function upsertTranslation({
+  contentType,
+  contentId,
+  fieldName,
+  language,
+  translatedText,
+}) {
+  const cleanText =
+    translatedText?.trim() || '';
+
+  if (!cleanText) {
+    return deleteTranslation(
+      contentType,
+      contentId,
+      fieldName,
+      language
+    );
+  }
+
+  const { data, error } = await supabase
+    .from('lmsy_translations')
+    .upsert(
+      {
+        content_type: contentType,
+        content_id: contentId,
+        field_name: fieldName,
+        language,
+        translated_text: cleanText,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict:
+          'content_type,content_id,field_name,language',
+      }
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function saveTranslations(
+  contentType,
+  contentId,
+  translations
+) {
+  const operations = [];
+
+  Object.entries(translations).forEach(
+    ([language, fields]) => {
+      Object.entries(fields).forEach(
+        ([fieldName, translatedText]) => {
+          operations.push(
+            upsertTranslation({
+              contentType,
+              contentId,
+              fieldName,
+              language,
+              translatedText,
+            })
+          );
+        }
+      );
+    }
+  );
+
+  return Promise.all(operations);
+}
+
+export async function deleteTranslation(
+  contentType,
+  contentId,
+  fieldName,
+  language
+) {
+  const { error } = await supabase
+    .from('lmsy_translations')
+    .delete()
+    .eq('content_type', contentType)
+    .eq('content_id', contentId)
+    .eq('field_name', fieldName)
+    .eq('language', language);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function deleteContentTranslations(
+  contentType,
+  contentId
+) {
+  const { error } = await supabase
+    .from('lmsy_translations')
+    .delete()
+    .eq('content_type', contentType)
+    .eq('content_id', contentId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export function organizeTranslations(
+  rows = []
+) {
+  return rows.reduce(
+    (result, row) => {
+      if (!result[row.language]) {
+        result[row.language] = {};
+      }
+
+      result[row.language][row.field_name] =
+        row.translated_text;
+
+      return result;
+    },
+    {}
+  );
+}
+
+// ================================
+// FOOTER SETTINGS
+// ================================
+
+export async function getFooterSettings() {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_footer_settings')
+      .select('*')
+      .order('id', {
+        ascending: true,
+      })
+      .limit(1)
+      .maybeSingle();
+
+
+  if (error) {
+    console.error(
+      'Unable to load footer settings:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data;
+}
+
+
+export async function updateFooterSettings(
+  footerId,
+  footerData
+) {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_footer_settings')
+      .update({
+        ...footerData,
+
+        updated_at:
+          new Date().toISOString(),
+      })
+      .eq('id', footerId)
+      .select()
+      .single();
+
+
+  if (error) {
+    console.error(
+      'Unable to update footer settings:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data;
 }
