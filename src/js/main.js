@@ -2704,6 +2704,44 @@ Object.entries(siteContentMap).forEach(
 
 
 // ================================
+// HERO BUTTON VISIBILITY
+// ================================
+
+function setHeroButtonsVisibility(showButtons = true) {
+  const primaryButton =
+    document.querySelector(
+      '#heroPrimaryButton'
+    );
+
+  const secondaryButton =
+    document.querySelector(
+      '#heroSecondaryButton'
+    );
+
+  const heroActions =
+    primaryButton?.closest('.hero__actions') ||
+    secondaryButton?.closest('.hero__actions');
+
+  const heroContent =
+    document.querySelector(
+      '.hero__content'
+    );
+
+  if (heroActions) {
+    heroActions.style.display =
+      showButtons ? '' : 'none';
+  }
+
+  if (heroContent) {
+    heroContent.classList.toggle(
+      'hero__content--buttons-hidden',
+      !showButtons
+    );
+  }
+}
+
+
+// ================================
 // RESTORE BASE CONTENT
 // ================================
 
@@ -2846,6 +2884,11 @@ function restoreBaseSiteContent() {
 
     }
   );
+
+
+  // Restore Hero buttons by default.
+
+  setHeroButtonsVisibility(true);
 }
 
 
@@ -2986,6 +3029,17 @@ function applySiteContent(content) {
         content.secondary_button_url;
     }
   }
+
+
+  // HERO BUTTON VISIBILITY
+
+  if (
+    content.content_key === 'hero_main'
+  ) {
+    setHeroButtonsVisibility(
+      content.show_buttons !== false
+    );
+  }
 }
 
 
@@ -3022,7 +3076,6 @@ async function loadPublicSiteContent() {
 
 
 loadPublicSiteContent();
-
 // ================================
 // PUBLIC SUPPORT
 // ================================
@@ -3747,6 +3800,16 @@ async function loadArtistsAdminSection() {
             style="display: none; grid-column: 1 / -1;"
           >
 
+            <label style="grid-column: 1 / -1;">
+              <input
+                type="checkbox"
+                name="show_buttons"
+                checked
+              />
+
+              <span>Show Hero Buttons</span>
+            </label>
+
             <label>
               <span>Primary Button Label</span>
 
@@ -3914,6 +3977,11 @@ async function loadArtistsAdminSection() {
               ? formData.get('secondary_button_url').trim() ||
                 null
               : null,
+
+          show_buttons:
+            isHero
+              ? formData.get('show_buttons') === 'on'
+              : true,
 
           image_url: null,
 
@@ -4808,6 +4876,16 @@ async function loadArtistsAdminSection() {
                 style="display: none; grid-column: 1 / -1;"
               >
 
+                <label style="grid-column: 1 / -1;">
+                  <input
+                    type="checkbox"
+                    name="show_buttons"
+                    ${content.show_buttons !== false ? 'checked' : ''}
+                  />
+
+                  <span>Show Hero Buttons</span>
+                </label>
+
                 <label>
                   <span>Primary Button Label</span>
 
@@ -5003,6 +5081,11 @@ async function loadArtistsAdminSection() {
                       )
                       .trim() || null
                   : null,
+
+              show_buttons:
+                isHero
+                  ? formData.get('show_buttons') === 'on'
+                  : content.show_buttons ?? true,
 
               image_url:
                 null,
