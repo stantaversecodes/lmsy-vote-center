@@ -194,6 +194,20 @@
   padding-block: 100px;
 }
 
+.hero__content--buttons-hidden {
+  grid-template-columns: minmax(0, 820px) 200px;
+}
+
+.hero__content--buttons-hidden .hero__main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero__content--buttons-hidden .hero__description {
+  margin-bottom: 0;
+}
+
 .hero__main {
   min-width: 0;
 }
@@ -1876,26 +1890,26 @@
   }
 
   .navbar__links {
-  width: 100%;
+    width: 100%;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-  gap: 0.55rem;
+    gap: 0.55rem;
 
-  overflow: visible;
+    overflow: visible;
 
-  padding-bottom: 0.15rem;
-}
+    padding-bottom: 0.15rem;
+  }
 
-.navbar__links a {
-  flex: 0 1 auto;
+  .navbar__links a {
+    flex: 0 1 auto;
 
-  white-space: nowrap;
+    white-space: nowrap;
 
-  font-size: 0.75rem;
-}
+    font-size: 0.75rem;
+  }
 
 
   /* ================================
@@ -1909,9 +1923,36 @@
 
   .hero__content {
     grid-template-columns: 1fr;
-    gap: 2.50rem;
+
+    gap: 2.5rem;
+
     padding-block: 2.25rem 2.75rem;
   }
+
+
+  /* HERO WITHOUT BUTTONS */
+
+  .hero__content--buttons-hidden {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__content--buttons-hidden .hero__main {
+    align-items: center;
+
+    text-align: center;
+  }
+
+  .hero__content--buttons-hidden .hero__title {
+    margin-inline: auto;
+  }
+
+  .hero__content--buttons-hidden .hero__description {
+    max-width: 560px;
+
+    margin-inline: auto;
+    margin-bottom: 0;
+  }
+
 
   .hero__main {
     width: 100%;
@@ -1964,13 +2005,13 @@
   ================================= */
 
   .hero-votes-card {
-  width: calc(100% - 3rem);
-  max-width: 210px;
+    width: calc(100% - 3rem);
+    max-width: 210px;
 
-  justify-self: center;
+    justify-self: center;
 
-  padding: 0.6rem 1rem;
-}
+    padding: 0.6rem 1rem;
+  }
 
   .hero-votes-card__top {
     margin-bottom: 0.45rem;
@@ -2102,11 +2143,9 @@
     min-width: 0;
   }
 
-  .tutorial-card__content {
+    .tutorial-card__content {
     padding: 1.2rem;
   }
-
-
   /* ================================
      ARTIST TABS
   ================================= */
