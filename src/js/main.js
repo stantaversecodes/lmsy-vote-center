@@ -5321,7 +5321,7 @@ async function loadVotingAdminSection() {
             type="button"
             id="cancelAddVoting"
           >
-          ← Cancel
+            ← Cancel
           </button>
 
         </div>
@@ -5427,6 +5427,15 @@ async function loadVotingAdminSection() {
           </label>
 
           <label>
+            <span>Start Date</span>
+
+            <input
+              type="datetime-local"
+              name="start_date"
+            />
+          </label>
+
+          <label>
             <span>Deadline</span>
 
             <input
@@ -5527,6 +5536,9 @@ async function loadVotingAdminSection() {
           accent:
             formData.get('accent'),
 
+          start_date:
+            formData.get('start_date') || null,
+
           deadline:
             formData.get('deadline') || null,
 
@@ -5546,9 +5558,9 @@ async function loadVotingAdminSection() {
         try {
           await createVotingPlatform(votingData);
 
-await loadVotingAdminSection();
-await loadPublicVotingPlatforms();
-await loadPublicTutorials();
+          await loadVotingAdminSection();
+          await loadPublicVotingPlatforms();
+          await loadPublicTutorials();
 
         } catch (error) {
           console.error(
@@ -5559,486 +5571,509 @@ await loadPublicTutorials();
       }
     );
   });
-// ================================
-// LOAD VOTING PLATFORMS
-// ================================
 
-try {
-  const platforms =
-    await getVotingPlatforms();
 
-  if (platforms.length === 0) {
-    adminVotingList.innerHTML = `
-      <p class="admin-panel__placeholder">
-        No voting platforms yet.
-      </p>
-    `;
+  // ================================
+  // LOAD VOTING PLATFORMS
+  // ================================
 
-    return;
-  }
+  try {
+    const platforms =
+      await getVotingPlatforms();
 
-  adminVotingList.innerHTML = platforms
-    .map((platform) => {
-      return `
-        <article
-          class="admin-voting-item"
-          data-voting-id="${platform.id}"
-        >
+    if (platforms.length === 0) {
+      adminVotingList.innerHTML = `
+        <p class="admin-panel__placeholder">
+          No voting platforms yet.
+        </p>
+      `;
 
-          <div class="admin-voting-item__info">
+      return;
+    }
 
-            <div class="admin-voting-item__top">
+    adminVotingList.innerHTML = platforms
+      .map((platform) => {
+        return `
+          <article
+            class="admin-voting-item"
+            data-voting-id="${platform.id}"
+          >
 
-              <strong class="admin-voting-item__event">
-                ${platform.event}
-              </strong>
+            <div class="admin-voting-item__info">
 
-              <span class="admin-voting-item__status">
-                ${platform.active ? 'Active' : 'Inactive'}
+              <div class="admin-voting-item__top">
+
+                <strong class="admin-voting-item__event">
+                  ${platform.event}
+                </strong>
+
+                <span class="admin-voting-item__status">
+                  ${platform.active ? 'Active' : 'Inactive'}
+                </span>
+
+              </div>
+
+              <span class="admin-voting-item__platform">
+                ${platform.platform}
+              </span>
+
+              <span class="admin-voting-item__meta">
+                ${platform.vote_type} · Priority ${platform.priority}
               </span>
 
             </div>
 
-            <span class="admin-voting-item__platform">
-              ${platform.platform}
-            </span>
+            <div class="admin-voting-item__actions">
 
-            <span class="admin-voting-item__meta">
-              ${platform.vote_type} · Priority ${platform.priority}
-            </span>
+              <button
+                class="btn btn-secondary"
+                type="button"
+                data-edit-voting="${platform.id}"
+              >
+                Edit
+              </button>
+
+              <button
+                class="btn btn-secondary"
+                type="button"
+                data-delete-voting="${platform.id}"
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </article>
+        `;
+      })
+      .join('');
+
+
+    // ================================
+    // EDIT VOTING
+    // ================================
+
+    const editVotingButtons =
+      document.querySelectorAll('[data-edit-voting]');
+
+    editVotingButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const votingId =
+          Number(button.dataset.editVoting);
+
+        const platform =
+          platforms.find((item) => item.id === votingId);
+
+        if (!platform) {
+          return;
+        }
+
+        const startDateValue =
+          platform.start_date
+            ? new Date(platform.start_date)
+                .toISOString()
+                .slice(0, 16)
+            : '';
+
+        const deadlineValue =
+          platform.deadline
+            ? new Date(platform.deadline)
+                .toISOString()
+                .slice(0, 16)
+            : '';
+
+        adminPanelBody.innerHTML = `
+          <div class="admin-form-view">
+
+            <div class="admin-form-view__header">
+
+              <div>
+
+                <span class="eyebrow">
+                  VOTING
+                </span>
+
+                <h3 class="admin-section-header__title">
+                  Edit Voting
+                </h3>
+
+                <p class="admin-section-header__description">
+                  Update this voting opportunity.
+                </p>
+
+              </div>
+
+              <button
+                class="btn btn-secondary"
+                type="button"
+                id="cancelEditVoting"
+              >
+                ← Cancel
+              </button>
+
+            </div>
+
+
+            <form
+              class="admin-voting-form"
+              id="adminEditVotingForm"
+            >
+
+              <label>
+                <span>Event name</span>
+
+                <input
+                  type="text"
+                  name="event"
+                  value="${platform.event ?? ''}"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Platform</span>
+
+                <input
+                  type="text"
+                  name="platform"
+                  value="${platform.platform ?? ''}"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Voting URL</span>
+
+                <input
+                  type="url"
+                  name="url"
+                  value="${platform.url ?? ''}"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Voting type</span>
+
+                <select
+                  name="vote_type"
+                  required
+                >
+
+                  <option
+                    value="ceremony"
+                    ${platform.vote_type === 'ceremony' ? 'selected' : ''}
+                  >
+                    Awards & Ceremonies
+                  </option>
+
+                  <option
+                    value="poll"
+                    ${platform.vote_type === 'poll' ? 'selected' : ''}
+                  >
+                    Poll
+                  </option>
+
+                  <option
+                    value="advertising"
+                    ${platform.vote_type === 'advertising' ? 'selected' : ''}
+                  >
+                    Advertising
+                  </option>
+
+                </select>
+              </label>
+
+              <label>
+                <span>Priority</span>
+
+                <select
+                  name="priority"
+                  required
+                >
+
+                  <option
+                    value="1"
+                    ${platform.priority === 1 ? 'selected' : ''}
+                  >
+                    Urgent
+                  </option>
+
+                  <option
+                    value="2"
+                    ${platform.priority === 2 ? 'selected' : ''}
+                  >
+                    High
+                  </option>
+
+                  <option
+                    value="3"
+                    ${platform.priority === 3 ? 'selected' : ''}
+                  >
+                    Normal
+                  </option>
+
+                </select>
+              </label>
+
+              <label>
+                <span>Accent</span>
+
+                <select name="accent">
+
+                  <option
+                    value="lmsy"
+                    ${platform.accent === 'lmsy' ? 'selected' : ''}
+                  >
+                    LMSY
+                  </option>
+
+                  <option
+                    value="lookmhee"
+                    ${platform.accent === 'lookmhee' ? 'selected' : ''}
+                  >
+                    Lookmhee
+                  </option>
+
+                  <option
+                    value="sonya"
+                    ${platform.accent === 'sonya' ? 'selected' : ''}
+                  >
+                    Sonya
+                  </option>
+
+                </select>
+              </label>
+
+              <label>
+                <span>Start Date</span>
+
+                <input
+                  type="datetime-local"
+                  name="start_date"
+                  value="${startDateValue}"
+                />
+              </label>
+
+              <label>
+                <span>Deadline</span>
+
+                <input
+                  type="datetime-local"
+                  name="deadline"
+                  value="${deadlineValue}"
+                />
+              </label>
+
+              <label>
+                <span>Frequency</span>
+
+                <input
+                  type="text"
+                  name="frequency"
+                  value="${platform.frequency ?? ''}"
+                />
+              </label>
+
+              <label>
+                <span>Tutorial URL</span>
+
+                <input
+                  type="url"
+                  name="tutorial_url"
+                  value="${platform.tutorial_url ?? ''}"
+                />
+              </label>
+
+              <label>
+                <span>Sort order</span>
+
+                <input
+                  type="number"
+                  name="sort_order"
+                  value="${platform.sort_order ?? 0}"
+                />
+              </label>
+
+              <label>
+                <input
+                  type="checkbox"
+                  name="active"
+                  ${platform.active ? 'checked' : ''}
+                />
+
+                <span>Active</span>
+              </label>
+
+              <button
+                class="btn btn-primary"
+                type="submit"
+              >
+                Save Changes
+              </button>
+
+            </form>
 
           </div>
+        `;
 
-          <div class="admin-voting-item__actions">
+        const cancelEditVoting =
+          document.querySelector('#cancelEditVoting');
 
-            <button
-              class="btn btn-secondary"
-              type="button"
-              data-edit-voting="${platform.id}"
-            >
-              Edit
-            </button>
+        cancelEditVoting.addEventListener('click', () => {
+          loadVotingAdminSection();
+        });
 
-            <button
-              class="btn btn-secondary"
-              type="button"
-              data-delete-voting="${platform.id}"
-            >
-              Delete
-            </button>
+        const adminEditVotingForm =
+          document.querySelector('#adminEditVotingForm');
 
-          </div>
+        adminEditVotingForm.addEventListener(
+          'submit',
+          async (event) => {
+            event.preventDefault();
 
-        </article>
-      `;
-    })
-    .join('');
+            const formData =
+              new FormData(adminEditVotingForm);
 
+            const votingData = {
+              event:
+                formData.get('event').trim(),
 
-// ================================
-// EDIT VOTING
-// ================================
+              platform:
+                formData.get('platform').trim(),
 
-const editVotingButtons =
-  document.querySelectorAll('[data-edit-voting]');
+              url:
+                formData.get('url').trim(),
 
-editVotingButtons.forEach((button) => {
-  button.addEventListener('click', () => {
-    const votingId =
-      Number(button.dataset.editVoting);
+              vote_type:
+                formData.get('vote_type'),
 
-    const platform =
-      platforms.find((item) => item.id === votingId);
+              priority:
+                Number(formData.get('priority')),
 
-    if (!platform) {
-      return;
-    }
+              accent:
+                formData.get('accent'),
 
-    const deadlineValue =
-      platform.deadline
-        ? new Date(platform.deadline)
-            .toISOString()
-            .slice(0, 16)
-        : '';
+              start_date:
+                formData.get('start_date') || null,
 
-    adminPanelBody.innerHTML = `
-      <div class="admin-form-view">
+              deadline:
+                formData.get('deadline') || null,
 
-        <div class="admin-form-view__header">
+              frequency:
+                formData.get('frequency').trim() || null,
 
-          <div>
+              tutorial_url:
+                formData.get('tutorial_url').trim() || null,
 
-            <span class="eyebrow">
-              VOTING
-            </span>
+              sort_order:
+                Number(formData.get('sort_order')) || 0,
 
-            <h3 class="admin-section-header__title">
-              Edit Voting
-            </h3>
+              active:
+                formData.get('active') === 'on',
+            };
 
-            <p class="admin-section-header__description">
-              Update this voting opportunity.
-            </p>
+            const saveChangesButton =
+              adminEditVotingForm.querySelector(
+                'button[type="submit"]'
+              );
 
-          </div>
+            try {
+              saveChangesButton.disabled = true;
+              saveChangesButton.textContent = 'Saving...';
 
-          <button
-            class="btn btn-secondary"
-            type="button"
-            id="cancelEditVoting"
-          >
-          ← Cancel
-          </button>
+              await updateVotingPlatform(
+                votingId,
+                votingData
+              );
 
-        </div>
+              await loadPublicVotingPlatforms();
+              await loadPublicTutorials();
 
+              saveChangesButton.textContent = 'Saved ✓';
 
-        <form
-          class="admin-voting-form"
-          id="adminEditVotingForm"
-        >
+              setTimeout(async () => {
+                await loadVotingAdminSection();
+              }, 700);
 
-          <label>
-            <span>Event name</span>
+            } catch (error) {
+              saveChangesButton.disabled = false;
+              saveChangesButton.textContent = 'Save Changes';
 
-            <input
-              type="text"
-              name="event"
-              value="${platform.event ?? ''}"
-              required
-            />
-          </label>
-
-          <label>
-            <span>Platform</span>
-
-            <input
-              type="text"
-              name="platform"
-              value="${platform.platform ?? ''}"
-              required
-            />
-          </label>
-
-          <label>
-            <span>Voting URL</span>
-
-            <input
-              type="url"
-              name="url"
-              value="${platform.url ?? ''}"
-              required
-            />
-          </label>
-
-          <label>
-            <span>Voting type</span>
-
-            <select
-              name="vote_type"
-              required
-            >
-
-              <option
-                value="ceremony"
-                ${platform.vote_type === 'ceremony' ? 'selected' : ''}
-              >
-                Awards & Ceremonies
-              </option>
-
-              <option
-                value="poll"
-                ${platform.vote_type === 'poll' ? 'selected' : ''}
-              >
-                Poll
-              </option>
-
-              <option
-                value="advertising"
-                ${platform.vote_type === 'advertising' ? 'selected' : ''}
-              >
-                Advertising
-              </option>
-
-            </select>
-          </label>
-
-          <label>
-            <span>Priority</span>
-
-            <select
-              name="priority"
-              required
-            >
-
-              <option
-                value="1"
-                ${platform.priority === 1 ? 'selected' : ''}
-              >
-                Urgent
-              </option>
-
-              <option
-                value="2"
-                ${platform.priority === 2 ? 'selected' : ''}
-              >
-                High
-              </option>
-
-              <option
-                value="3"
-                ${platform.priority === 3 ? 'selected' : ''}
-              >
-                Normal
-              </option>
-
-            </select>
-          </label>
-
-          <label>
-            <span>Accent</span>
-
-            <select name="accent">
-
-              <option
-                value="lmsy"
-                ${platform.accent === 'lmsy' ? 'selected' : ''}
-              >
-                LMSY
-              </option>
-
-              <option
-                value="lookmhee"
-                ${platform.accent === 'lookmhee' ? 'selected' : ''}
-              >
-                Lookmhee
-              </option>
-
-              <option
-                value="sonya"
-                ${platform.accent === 'sonya' ? 'selected' : ''}
-              >
-                Sonya
-              </option>
-
-            </select>
-          </label>
-
-          <label>
-            <span>Deadline</span>
-
-            <input
-              type="datetime-local"
-              name="deadline"
-              value="${deadlineValue}"
-            />
-          </label>
-
-          <label>
-            <span>Frequency</span>
-
-            <input
-              type="text"
-              name="frequency"
-              value="${platform.frequency ?? ''}"
-            />
-          </label>
-
-          <label>
-            <span>Tutorial URL</span>
-
-            <input
-              type="url"
-              name="tutorial_url"
-              value="${platform.tutorial_url ?? ''}"
-            />
-          </label>
-
-          <label>
-            <span>Sort order</span>
-
-            <input
-              type="number"
-              name="sort_order"
-              value="${platform.sort_order ?? 0}"
-            />
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="active"
-              ${platform.active ? 'checked' : ''}
-            />
-
-            <span>Active</span>
-          </label>
-
-          <button
-            class="btn btn-primary"
-            type="submit"
-          >
-            Save Changes
-          </button>
-
-        </form>
-
-      </div>
-    `;
-
-    const cancelEditVoting =
-      document.querySelector('#cancelEditVoting');
-
-    cancelEditVoting.addEventListener('click', () => {
-      loadVotingAdminSection();
+              console.error(
+                'Unable to update voting platform:',
+                error
+              );
+            }
+          }
+        );
+      });
     });
 
-    const adminEditVotingForm =
-      document.querySelector('#adminEditVotingForm');
 
-    adminEditVotingForm.addEventListener(
-      'submit',
-      async (event) => {
-        event.preventDefault();
+    // ================================
+    // DELETE VOTING
+    // ================================
 
-        const formData =
-          new FormData(adminEditVotingForm);
+    const deleteVotingButtons =
+      document.querySelectorAll('[data-delete-voting]');
 
-        const votingData = {
-          event:
-            formData.get('event').trim(),
+    deleteVotingButtons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        const votingId =
+          Number(button.dataset.deleteVoting);
 
-          platform:
-            formData.get('platform').trim(),
+        const platform =
+          platforms.find((item) => item.id === votingId);
 
-          url:
-            formData.get('url').trim(),
+        if (!platform) {
+          return;
+        }
 
-          vote_type:
-            formData.get('vote_type'),
+        const confirmed = window.confirm(
+          `Delete "${platform.event}"?\n\nThis action cannot be undone.`
+        );
 
-          priority:
-            Number(formData.get('priority')),
-
-          accent:
-            formData.get('accent'),
-
-          deadline:
-            formData.get('deadline') || null,
-
-          frequency:
-            formData.get('frequency').trim() || null,
-
-          tutorial_url:
-            formData.get('tutorial_url').trim() || null,
-
-          sort_order:
-            Number(formData.get('sort_order')) || 0,
-
-          active:
-            formData.get('active') === 'on',
-        };
-
-        const saveChangesButton =
-          adminEditVotingForm.querySelector(
-            'button[type="submit"]'
-          );
+        if (!confirmed) {
+          return;
+        }
 
         try {
-          saveChangesButton.disabled = true;
-          saveChangesButton.textContent = 'Saving...';
+          button.disabled = true;
+          button.textContent = 'Deleting...';
 
-          await updateVotingPlatform(
-  votingId,
-  votingData
-);
+          await deleteVotingPlatform(votingId);
 
-await loadPublicVotingPlatforms();
-await loadPublicTutorials();
-
-          saveChangesButton.textContent = 'Saved ✓';
-
-          setTimeout(async () => {
-            await loadVotingAdminSection();
-          }, 700);
+          await loadVotingAdminSection();
+          await loadPublicVotingPlatforms();
+          await loadPublicTutorials();
 
         } catch (error) {
-          saveChangesButton.disabled = false;
-          saveChangesButton.textContent = 'Save Changes';
+          button.disabled = false;
+          button.textContent = 'Delete';
 
           console.error(
-            'Unable to update voting platform:',
+            'Unable to delete voting platform:',
             error
           );
         }
-      }
+      });
+    });
+
+  } catch (error) {
+    adminVotingList.innerHTML = `
+      <p class="admin-panel__placeholder">
+        Unable to load voting platforms.
+      </p>
+    `;
+
+    console.error(
+      'Unable to load voting platforms:',
+      error
     );
-  });
-});
-
-
-// ================================
-// DELETE VOTING
-// ================================
-
-const deleteVotingButtons =
-  document.querySelectorAll('[data-delete-voting]');
-
-deleteVotingButtons.forEach((button) => {
-  button.addEventListener('click', async () => {
-    const votingId =
-      Number(button.dataset.deleteVoting);
-
-    const platform =
-      platforms.find((item) => item.id === votingId);
-
-    if (!platform) {
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Delete "${platform.event}"?\n\nThis action cannot be undone.`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      button.disabled = true;
-      button.textContent = 'Deleting...';
-
-      await deleteVotingPlatform(votingId);
-
-await loadVotingAdminSection();
-await loadPublicVotingPlatforms();
-await loadPublicTutorials();
-
-    } catch (error) {
-      button.disabled = false;
-      button.textContent = 'Delete';
-
-      console.error(
-        'Unable to delete voting platform:',
-        error
-      );
-    }
-  });
-});
-
-} catch (error) {
-  adminVotingList.innerHTML = `
-    <p class="admin-panel__placeholder">
-      Unable to load voting platforms.
-    </p>
-  `;
-
-  console.error(
-    'Unable to load voting platforms:',
-    error
-  );
+  }
 }
-}
+
 
 // ================================
 // TUTORIALS ADMIN
@@ -6082,7 +6117,6 @@ async function loadTutorialAdminSection() {
 
   const addTutorialButton =
     document.querySelector('#addTutorialButton');
-
 
   // ================================
   // ADD TUTORIAL
