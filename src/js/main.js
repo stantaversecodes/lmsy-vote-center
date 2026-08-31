@@ -6033,10 +6033,36 @@ function applySiteContent(content) {
 async function loadPublicSiteContent() {
   try {
 
-    restoreBaseSiteContent();
+    // ================================
+    // PREVENT HERO BUTTON FLASH
+    // ================================
 
-    applyTranslations();
+    const heroPrimaryButton =
+      document.querySelector(
+        '#heroPrimaryButton'
+      );
 
+    const heroSecondaryButton =
+      document.querySelector(
+        '#heroSecondaryButton'
+      );
+
+
+    if (
+      heroPrimaryButton &&
+      heroSecondaryButton
+    ) {
+      heroPrimaryButton.style.visibility =
+        'hidden';
+
+      heroSecondaryButton.style.visibility =
+        'hidden';
+    }
+
+
+    // ================================
+    // LOAD CONTENT FIRST
+    // ================================
 
     const contentItems =
       await getActiveContent();
@@ -6102,6 +6128,16 @@ async function loadPublicSiteContent() {
       );
 
 
+    // ================================
+    // APPLY CONTENT ONLY AFTER
+    // EVERYTHING IS READY
+    // ================================
+
+    restoreBaseSiteContent();
+
+    applyTranslations();
+
+
     mainContentItems.forEach(
       (content) => {
         applySiteContent(
@@ -6111,7 +6147,47 @@ async function loadPublicSiteContent() {
     );
 
 
+    // ================================
+    // RESTORE BUTTON VISIBILITY
+    // ================================
+
+    if (heroPrimaryButton) {
+      heroPrimaryButton.style.visibility =
+        '';
+    }
+
+
+    if (heroSecondaryButton) {
+      heroSecondaryButton.style.visibility =
+        '';
+    }
+
+
   } catch (error) {
+
+    const heroPrimaryButton =
+      document.querySelector(
+        '#heroPrimaryButton'
+      );
+
+    const heroSecondaryButton =
+      document.querySelector(
+        '#heroSecondaryButton'
+      );
+
+
+    if (heroPrimaryButton) {
+      heroPrimaryButton.style.visibility =
+        '';
+    }
+
+
+    if (heroSecondaryButton) {
+      heroSecondaryButton.style.visibility =
+        '';
+    }
+
+
     console.error(
       'Unable to load public site content:',
       error
