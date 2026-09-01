@@ -612,6 +612,44 @@
 }
 
 
+/* PRIORITY TAB */
+
+.vote-filter--priority.is-active {
+  background: #FDE8E8;
+  color: #B42318;
+
+  border-color: #F7CACA;
+
+  box-shadow:
+    0 4px 12px rgba(180, 35, 24, 0.08);
+}
+
+.vote-filter--priority:hover {
+  border-color: #F2B8B5;
+}
+
+.vote-filter--priority.is-active:hover {
+  background: #FADDDD;
+  color: #9F1F17;
+}
+
+
+/* PRIORITY DESCRIPTION */
+
+.vote-priority-description {
+  margin: 0.85rem 0 0;
+
+  color: var(--color-text-soft);
+
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.vote-priority-description[hidden] {
+  display: none;
+}
+
+
 /* ================================
    VOTING CARDS
 ================================= */
@@ -709,12 +747,21 @@
 
 .vote-card__actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 
   gap: 0.7rem;
 }
 
 .vote-card__actions .btn {
-  flex: 1;
+  flex: 0 0 auto;
+
+  min-width: 138px;
+
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+
+  white-space: nowrap;
 }
 
 

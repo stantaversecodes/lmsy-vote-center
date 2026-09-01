@@ -22,16 +22,28 @@ import {
   createVotingPlatform,
   updateVotingPlatform,
   deleteVotingPlatform,
+
+  getVotingTabs,
+  getActiveVotingTabs,
+  createVotingTab,
+  updateVotingTab,
+  deleteVotingTab,
+  getVotingTabAssignments,
+  getVotingTabAssignmentsByVotingId,
+  replaceVotingTabAssignments,
+
   getTutorials,
   getActiveTutorials,
   createTutorial,
   updateTutorial,
   deleteTutorial,
+
   getArtists,
   getActiveArtists,
   createArtist,
   updateArtist,
   uploadArtistPhoto,
+
   getContent,
   getActiveContent,
   createContent,
@@ -39,29 +51,38 @@ import {
   deleteContent,
   setContentAsMain,
   returnContentToBase,
+
   getDonationSettings,
   getActiveDonationSettings,
   createDonationSetting,
   updateDonationSetting,
   deleteDonationSetting,
   uploadSupportQr,
+
   getDonationLinks,
   getActiveDonationLinks,
   createDonationLink,
   updateDonationLink,
   deleteDonationLink,
+
   verifyAdminAccess,
+
   getWatchLinks,
   getActiveWatchLinks,
   createWatchLink,
   updateWatchLink,
   deleteWatchLink,
+
   getTranslations,
   getTranslationsByType,
   saveTranslations,
   organizeTranslations,
+
   getFooterSettings,
   updateFooterSettings,
+
+  getVotingSettings,
+  updateVotingSettings,
 } from './admin.js';
 
 // ================================
@@ -397,130 +418,150 @@ document.querySelector('#app').innerHTML = `
 
 </header>
   <!-- ================================
-       WHERE TO VOTE
-  ================================= -->
+     WHERE TO VOTE
+================================= -->
 
-  <section
-    class="section"
-    id="vote"
-  >
+<section
+  class="section"
+  id="vote"
+>
 
-    <div class="page-container">
+  <div class="page-container">
 
-      <span
-        class="eyebrow"
-        data-i18n="voting.eyebrow"
+    <span
+      class="eyebrow"
+      id="votingSubtitle"
+      data-i18n="voting.eyebrow"
+    >
+      WHERE TO VOTE
+    </span>
+
+
+    <h2
+      class="section-title"
+      id="votingTitle"
+      data-i18n="voting.sectionTitle"
+    >
+      Voting Platforms
+    </h2>
+
+
+    <p
+      class="section-description"
+      id="votingBody"
+      data-i18n="voting.description"
+    >
+      Find current voting opportunities for Lookmhee, Sonya and LMSY.
+    </p>
+
+
+    <!-- FILTERS -->
+
+    <div class="vote-filters">
+
+      <button
+        class="vote-filter"
+        type="button"
+        data-filter="all"
+        data-i18n="voting.all"
       >
-        WHERE TO VOTE
-      </span>
+        All
+      </button>
 
 
-      <h2
-        class="section-title"
-        data-i18n="voting.sectionTitle"
+      <button
+        class="vote-filter vote-filter--priority is-active"
+        type="button"
+        data-filter="priority"
+        data-i18n="voting.priority"
       >
-        Voting Platforms
-      </h2>
+        Priority
+      </button>
 
 
-      <p
-        class="section-description"
-        data-i18n="voting.description"
+      <button
+        class="vote-filter"
+        type="button"
+        data-filter="ceremony"
+        data-i18n="voting.ceremony"
       >
-        Find current voting opportunities for Lookmhee, Sonya and LMSY.
-      </p>
+        Awards & Ceremonies
+      </button>
 
 
-      <!-- FILTERS -->
-
-      <div class="vote-filters">
-
-        <button
-          class="vote-filter is-active"
-          type="button"
-          data-filter="all"
-          data-i18n="voting.all"
-        >
-          All
-        </button>
-
-
-        <button
-          class="vote-filter"
-          type="button"
-          data-filter="ceremony"
-          data-i18n="voting.ceremony"
-        >
-          Awards & Ceremonies
-        </button>
-
-
-        <button
-          class="vote-filter"
-          type="button"
-          data-filter="poll"
-          data-i18n="voting.poll"
-        >
-          Poll
-        </button>
-
-
-        <button
-          class="vote-filter"
-          type="button"
-          data-filter="advertising"
-          data-i18n="voting.advertising"
-        >
-          Advertising
-        </button>
-
-      </div>
-
-
-      <!-- VOTING CARDS -->
-
-      <div
-        class="vote-grid"
-        id="publicVotingGrid"
+      <button
+        class="vote-filter"
+        type="button"
+        data-filter="poll"
+        data-i18n="voting.poll"
       >
-
-        <p
-          class="vote-empty__description"
-          data-i18n="common.loading"
-        >
-          Loading...
-        </p>
-
-      </div>
+        Poll
+      </button>
 
 
-      <!-- EMPTY STATE -->
-
-      <div
-        class="vote-empty"
-        hidden
+      <button
+        class="vote-filter"
+        type="button"
+        data-filter="advertising"
+        data-i18n="voting.advertising"
       >
-
-        <p
-          class="vote-empty__title"
-          data-i18n="voting.noVotes"
-        >
-          No active votes in this category.
-        </p>
-
-
-        <p
-          class="vote-empty__description"
-          data-i18n="voting.checkAnother"
-        >
-          Check another category or come back later.
-        </p>
-
-      </div>
+        Advertising
+      </button>
 
     </div>
 
-  </section>
+
+        <p
+      class="vote-priority-description"
+      id="votePriorityDescription"
+      hidden
+    ></p>
+
+
+    <!-- VOTING CARDS -->
+
+    <div
+      class="vote-grid"
+      id="publicVotingGrid"
+    >
+
+      <p
+        class="vote-empty__description"
+        data-i18n="common.loading"
+      >
+        Loading...
+      </p>
+
+    </div>
+
+
+    <!-- EMPTY STATE -->
+
+    <div
+      class="vote-empty"
+      hidden
+    >
+
+      <p
+        class="vote-empty__title"
+        data-i18n="voting.noVotes"
+      >
+        No active votes in this category.
+      </p>
+
+
+      <p
+        class="vote-empty__description"
+        data-i18n="voting.checkAnother"
+      >
+        Check another category or come back later.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
 
      <!-- ================================
      TUTORIALS
@@ -2173,9 +2214,9 @@ adminAccessForm.addEventListener(
 // PUBLIC VOTING
 // ================================
 
-const voteFilters =
-  document.querySelectorAll(
-    '.vote-filter'
+const voteFiltersContainer =
+  document.querySelector(
+    '.vote-filters'
   );
 
 const publicVotingGrid =
@@ -2193,12 +2234,23 @@ const activeVoteCount =
     '#activeVoteCount'
   );
 
+const votePriorityDescription =
+  document.querySelector(
+    '#votePriorityDescription'
+  );
+
+
 let publicVotingPlatforms = [];
 
 let publicVotingTranslations = {};
 
-let currentPublicVoteFilter =
-  'all';
+let publicVotingTabs = [];
+
+let publicVotingTabTranslations = {};
+
+let publicVotingTabAssignments = [];
+
+let currentPublicVoteFilter = null;
 
 
 // ================================
@@ -2219,16 +2271,58 @@ function getVotingTranslatedField(
     );
   }
 
+
   const platformTranslations =
     publicVotingTranslations[
       platform.id
     ];
+
 
   return (
     platformTranslations?.[
       currentLanguage
     ]?.[fieldName] ??
     platform[fieldName] ??
+    ''
+  );
+}
+
+
+// ================================
+// GET TRANSLATED VOTING TAB FIELD
+// ================================
+
+function getVotingTabTranslatedField(
+  tab,
+  fieldName
+) {
+  if (!tab) {
+    return '';
+  }
+
+
+  if (
+    currentLanguage ===
+    DEFAULT_LANGUAGE
+  ) {
+    return (
+      tab[fieldName] ??
+      ''
+    );
+  }
+
+
+  const tabTranslations =
+    publicVotingTabTranslations[
+      tab.id
+    ];
+
+
+  return (
+    tabTranslations?.[
+      currentLanguage
+    ]?.[fieldName] ??
+    tab[fieldName] ??
     ''
   );
 }
@@ -2246,6 +2340,15 @@ function getVotingText(key) {
 
       description:
         'Find current voting opportunities for Lookmhee, Sonya and LMSY.',
+
+      all:
+        'All',
+
+      priority:
+        'Priority',
+
+      priorityDescription:
+        'These are the most important votes right now — focus on these first.',
 
       ceremony:
         'Awards & Ceremonies',
@@ -2297,6 +2400,15 @@ function getVotingText(key) {
       description:
         'Encuentra las votaciones actuales para Lookmhee, Sonya y LMSY.',
 
+      all:
+        'Todas',
+
+      priority:
+        'Prioridad',
+
+      priorityDescription:
+        'Estas son las votaciones más importantes en este momento — enfócate primero en estas.',
+
       ceremony:
         'Premios y Ceremonias',
 
@@ -2346,6 +2458,15 @@ function getVotingText(key) {
 
       description:
         'ค้นหาการโหวตปัจจุบันสำหรับ Lookmhee, Sonya และ LMSY',
+
+      all:
+        'ทั้งหมด',
+
+      priority:
+        'สำคัญ',
+
+      priorityDescription:
+        'นี่คือการโหวตที่สำคัญที่สุดในตอนนี้ — ให้ความสำคัญกับรายการเหล่านี้ก่อน',
 
       ceremony:
         'รางวัลและงานประกาศรางวัล',
@@ -2397,6 +2518,15 @@ function getVotingText(key) {
       description:
         '查看 Lookmhee、Sonya 和 LMSY 当前的投票活动。',
 
+      all:
+        '全部',
+
+      priority:
+        '优先',
+
+      priorityDescription:
+        '这些是目前最重要的投票——请优先关注这些投票。',
+
       ceremony:
         '奖项与典礼',
 
@@ -2446,6 +2576,15 @@ function getVotingText(key) {
 
       description:
         'Encontre as votações atuais para Lookmhee, Sonya e LMSY.',
+
+      all:
+        'Todas',
+
+      priority:
+        'Prioridade',
+
+      priorityDescription:
+        'Estas são as votações mais importantes no momento — concentre-se nelas primeiro.',
 
       ceremony:
         'Prêmios e Cerimônias',
@@ -2497,6 +2636,15 @@ function getVotingText(key) {
       description:
         'Lookmhee, Sonya 및 LMSY의 현재 투표를 확인하세요.',
 
+      all:
+        '전체',
+
+      priority:
+        '우선순위',
+
+      priorityDescription:
+        '지금 가장 중요한 투표입니다 — 이 투표들에 먼저 집중해 주세요.',
+
       ceremony:
         '시상식 및 어워드',
 
@@ -2541,10 +2689,12 @@ function getVotingText(key) {
     },
   };
 
+
   const language =
     votingTexts[currentLanguage]
       ? currentLanguage
       : DEFAULT_LANGUAGE;
+
 
   return (
     votingTexts[language]?.[key] ??
@@ -2562,13 +2712,25 @@ function getVotingText(key) {
 
 function getVotingLocale() {
   const locales = {
-    en: 'en-US',
-    es: 'es-ES',
-    th: 'th-TH',
-    zh: 'zh-CN',
-    pt: 'pt-BR',
-    ko: 'ko-KR',
+    en:
+      'en-US',
+
+    es:
+      'es-ES',
+
+    th:
+      'th-TH',
+
+    zh:
+      'zh-CN',
+
+    pt:
+      'pt-BR',
+
+    ko:
+      'ko-KR',
   };
+
 
   return (
     locales[currentLanguage] ||
@@ -2581,7 +2743,7 @@ function getVotingLocale() {
 // VOTING LABELS
 // ================================
 
-function getVoteTypeLabel(
+function getLegacyVoteTypeLabel(
   voteType
 ) {
   const labels = {
@@ -2601,9 +2763,11 @@ function getVoteTypeLabel(
       ),
   };
 
+
   return (
     labels[voteType] ||
-    voteType
+    voteType ||
+    ''
   );
 }
 
@@ -2628,6 +2792,7 @@ function getPriorityLabel(
       ),
   };
 
+
   return (
     labels[priority] ||
     getVotingText(
@@ -2651,6 +2816,7 @@ function getPriorityClass(
       'vote-card__priority--normal',
   };
 
+
   return (
     classes[priority] ||
     'vote-card__priority--normal'
@@ -2662,16 +2828,20 @@ function getAccentClass(
   accent
 ) {
   if (
-    accent === 'lookmhee'
+    accent ===
+    'lookmhee'
   ) {
     return 'vote-card--yellow';
   }
 
+
   if (
-    accent === 'sonya'
+    accent ===
+    'sonya'
   ) {
     return 'vote-card--blue';
   }
+
 
   return 'vote-card--lmsy';
 }
@@ -2688,8 +2858,12 @@ function formatVoteDate(
     return null;
   }
 
+
   const date =
-    new Date(dateValue);
+    new Date(
+      dateValue
+    );
+
 
   if (
     Number.isNaN(
@@ -2699,13 +2873,388 @@ function formatVoteDate(
     return null;
   }
 
+
   return new Intl.DateTimeFormat(
     getVotingLocale(),
     {
-      month: 'short',
-      day: 'numeric',
+      month:
+        'short',
+
+      day:
+        'numeric',
     }
   ).format(date);
+}
+
+
+// ================================
+// GET ASSIGNED TABS FOR VOTING
+// ================================
+
+function getVotingAssignedTabs(
+  votingId
+) {
+  const assignedTabIds =
+    publicVotingTabAssignments
+      .filter(
+        (assignment) =>
+          Number(
+            assignment.voting_id
+          ) ===
+          Number(votingId)
+      )
+      .map(
+        (assignment) =>
+          Number(
+            assignment.tab_id
+          )
+      );
+
+
+  return publicVotingTabs
+    .filter(
+      (tab) =>
+        assignedTabIds.includes(
+          Number(tab.id)
+        )
+    )
+    .sort(
+      (firstTab, secondTab) => {
+        const firstSortOrder =
+          Number(
+            firstTab.sort_order ??
+            0
+          );
+
+        const secondSortOrder =
+          Number(
+            secondTab.sort_order ??
+            0
+          );
+
+
+        if (
+          firstSortOrder !==
+          secondSortOrder
+        ) {
+          return (
+            firstSortOrder -
+            secondSortOrder
+          );
+        }
+
+
+        return (
+          Number(firstTab.id) -
+          Number(secondTab.id)
+        );
+      }
+    );
+}
+
+
+// ================================
+// GET CARD CATEGORY LABEL
+// ================================
+
+function getVotingCardCategoryLabel(
+  platform
+) {
+  const assignedTabs =
+    getVotingAssignedTabs(
+      platform.id
+    );
+
+
+  const preferredTab =
+    assignedTabs.find(
+      (tab) =>
+        tab.tab_key !==
+        'priority'
+    ) ??
+    assignedTabs[0];
+
+
+  if (preferredTab) {
+    return (
+      getVotingTabTranslatedField(
+        preferredTab,
+        'label'
+      ) ||
+      preferredTab.label ||
+      ''
+    );
+  }
+
+
+  return getLegacyVoteTypeLabel(
+    platform.vote_type
+  );
+}
+
+
+// ================================
+// GET DEFAULT PUBLIC VOTING FILTER
+// ================================
+
+function getDefaultPublicVotingFilter() {
+  const defaultTab =
+    publicVotingTabs.find(
+      (tab) =>
+        tab.active === true &&
+        tab.is_default === true
+    );
+
+
+  if (defaultTab) {
+    return `tab-${defaultTab.id}`;
+  }
+
+
+  return 'all';
+}
+
+
+// ================================
+// CHECK CURRENT FILTER
+// ================================
+
+function publicVotingFilterExists(
+  filterValue
+) {
+  if (
+    filterValue ===
+    'all'
+  ) {
+    return true;
+  }
+
+
+  if (
+    !filterValue ||
+    !filterValue.startsWith(
+      'tab-'
+    )
+  ) {
+    return false;
+  }
+
+
+  const tabId =
+    Number(
+      filterValue.replace(
+        'tab-',
+        ''
+      )
+    );
+
+
+  return publicVotingTabs.some(
+    (tab) =>
+      Number(tab.id) ===
+        tabId &&
+      tab.active === true
+  );
+}
+
+
+// ================================
+// GET SELECTED VOTING TAB
+// ================================
+
+function getSelectedPublicVotingTab() {
+  if (
+    !currentPublicVoteFilter ||
+    currentPublicVoteFilter ===
+      'all'
+  ) {
+    return null;
+  }
+
+
+  if (
+    !currentPublicVoteFilter.startsWith(
+      'tab-'
+    )
+  ) {
+    return null;
+  }
+
+
+  const tabId =
+    Number(
+      currentPublicVoteFilter.replace(
+        'tab-',
+        ''
+      )
+    );
+
+
+  return (
+    publicVotingTabs.find(
+      (tab) =>
+        Number(tab.id) ===
+        tabId
+    ) ??
+    null
+  );
+}
+
+
+// ================================
+// RENDER PUBLIC VOTING FILTERS
+// ================================
+
+function renderPublicVotingFilters() {
+  if (
+    !voteFiltersContainer
+  ) {
+    return;
+  }
+
+
+  const allButton = `
+    <button
+      class="
+        vote-filter
+        ${
+          currentPublicVoteFilter ===
+          'all'
+            ? 'is-active'
+            : ''
+        }
+      "
+      type="button"
+      data-filter="all"
+    >
+      ${getVotingText('all')}
+    </button>
+  `;
+
+
+  const dynamicButtons =
+    publicVotingTabs
+      .filter(
+        (tab) =>
+          tab.active === true
+      )
+      .map(
+        (tab) => {
+          const filterValue =
+            `tab-${tab.id}`;
+
+
+          const isPriorityTab =
+            tab.tab_key ===
+            'priority';
+
+
+          const translatedLabel =
+            getVotingTabTranslatedField(
+              tab,
+              'label'
+            ) ||
+            tab.label;
+
+
+          return `
+            <button
+              class="
+                vote-filter
+                ${
+                  isPriorityTab
+                    ? 'vote-filter--priority'
+                    : ''
+                }
+                ${
+                  currentPublicVoteFilter ===
+                  filterValue
+                    ? 'is-active'
+                    : ''
+                }
+              "
+              type="button"
+              data-filter="${filterValue}"
+            >
+              ${translatedLabel}
+            </button>
+          `;
+        }
+      )
+      .join('');
+
+
+  voteFiltersContainer.innerHTML =
+    allButton +
+    dynamicButtons;
+}
+
+
+// ================================
+// UPDATE VOTING FILTER DESCRIPTION
+// ================================
+
+function updatePublicVotingFilterDescription() {
+  if (
+    !votePriorityDescription
+  ) {
+    return;
+  }
+
+
+  if (
+    currentPublicVoteFilter ===
+    'all'
+  ) {
+    votePriorityDescription.textContent =
+      '';
+
+    votePriorityDescription.hidden =
+      true;
+
+    return;
+  }
+
+
+  const selectedTab =
+    getSelectedPublicVotingTab();
+
+
+  if (!selectedTab) {
+    votePriorityDescription.textContent =
+      '';
+
+    votePriorityDescription.hidden =
+      true;
+
+    return;
+  }
+
+
+  const description =
+    getVotingTabTranslatedField(
+      selectedTab,
+      'description'
+    ).trim();
+
+
+  votePriorityDescription.textContent =
+    description;
+
+
+  votePriorityDescription.hidden =
+    !description;
+}
+
+
+// ================================
+// UPDATE VOTING FILTER UI
+// ================================
+
+function updatePublicVotingFilterUI() {
+  renderPublicVotingFilters();
+
+  updatePublicVotingFilterDescription();
 }
 
 
@@ -2714,48 +3263,17 @@ function formatVoteDate(
 // ================================
 
 function updatePublicVotingStaticText() {
-  const voteSection =
-    document.querySelector(
-      '#vote'
-    );
-
-  if (!voteSection) {
-    return;
-  }
-
-  const eyebrow =
-    voteSection.querySelector(
-      '.eyebrow'
-    );
-
-  const description =
-    voteSection.querySelector(
-      '.section-description'
-    );
-
   const emptyTitle =
     voteEmpty?.querySelector(
       '.vote-empty__title'
     );
+
 
   const emptyDescription =
     voteEmpty?.querySelector(
       '.vote-empty__description'
     );
 
-  if (eyebrow) {
-    eyebrow.textContent =
-      getVotingText(
-        'eyebrow'
-      );
-  }
-
-  if (description) {
-    description.textContent =
-      getVotingText(
-        'description'
-      );
-  }
 
   if (emptyTitle) {
     emptyTitle.textContent =
@@ -2764,12 +3282,82 @@ function updatePublicVotingStaticText() {
       );
   }
 
+
   if (emptyDescription) {
     emptyDescription.textContent =
       getVotingText(
         'checkAnother'
       );
   }
+
+
+  updatePublicVotingFilterUI();
+}
+
+
+// ================================
+// FILTER PUBLIC VOTING
+// ================================
+
+function getFilteredPublicVotingPlatforms(
+  selectedFilter
+) {
+  if (
+    selectedFilter ===
+    'all'
+  ) {
+    return [
+      ...publicVotingPlatforms,
+    ];
+  }
+
+
+  if (
+    !selectedFilter ||
+    !selectedFilter.startsWith(
+      'tab-'
+    )
+  ) {
+    return [];
+  }
+
+
+  const tabId =
+    Number(
+      selectedFilter.replace(
+        'tab-',
+        ''
+      )
+    );
+
+
+  const votingIds =
+    new Set(
+      publicVotingTabAssignments
+        .filter(
+          (assignment) =>
+            Number(
+              assignment.tab_id
+            ) ===
+            tabId
+        )
+        .map(
+          (assignment) =>
+            Number(
+              assignment.voting_id
+            )
+        )
+    );
+
+
+  return publicVotingPlatforms.filter(
+    (platform) =>
+      votingIds.has(
+        Number(
+          platform.id
+        )
+      )
+  );
 }
 
 
@@ -2781,29 +3369,44 @@ function renderPublicVotingPlatforms(
   selectedFilter =
     currentPublicVoteFilter
 ) {
-  if (!publicVotingGrid) {
+  if (
+    !publicVotingGrid
+  ) {
     return;
   }
+
+
+  if (
+    !publicVotingFilterExists(
+      selectedFilter
+    )
+  ) {
+    selectedFilter =
+      getDefaultPublicVotingFilter();
+  }
+
 
   currentPublicVoteFilter =
     selectedFilter;
 
+
   updatePublicVotingStaticText();
 
-  const filteredPlatforms =
-    selectedFilter === 'all'
-      ? publicVotingPlatforms
-      : publicVotingPlatforms.filter(
-          (platform) =>
-            platform.vote_type ===
-            selectedFilter
-        );
 
-  if (voteEmpty) {
+  const filteredPlatforms =
+    getFilteredPublicVotingPlatforms(
+      selectedFilter
+    );
+
+
+  if (
+    voteEmpty
+  ) {
     voteEmpty.hidden =
       filteredPlatforms.length !==
       0;
   }
+
 
   if (
     filteredPlatforms.length ===
@@ -2815,187 +3418,251 @@ function renderPublicVotingPlatforms(
     return;
   }
 
+
   publicVotingGrid.innerHTML =
     filteredPlatforms
-      .map((platform) => {
-        const startDate =
-          formatVoteDate(
-            platform.start_date
-          );
+      .map(
+        (platform) => {
+          const startDate =
+            formatVoteDate(
+              platform.start_date
+            );
 
-        const deadline =
-          formatVoteDate(
-            platform.deadline
-          );
 
-        const translatedFrequency =
-  getVotingTranslatedField(
-    platform,
-    'frequency'
-  );
+          const deadline =
+            formatVoteDate(
+              platform.deadline
+            );
 
-        return `
-          <article
-            class="
-              vote-card
-              ${getAccentClass(
-                platform.accent
-              )}
-            "
-            data-vote-type="${
-              platform.vote_type
-            }"
-            data-priority="${
-              platform.priority
-            }"
-          >
 
-            <div
-              class="vote-card__top"
+          const translatedFrequency =
+            getVotingTranslatedField(
+              platform,
+              'frequency'
+            );
+
+
+          const categoryLabel =
+            getVotingCardCategoryLabel(
+              platform
+            );
+
+
+          return `
+            <article
+              class="
+                vote-card
+                ${getAccentClass(
+                  platform.accent
+                )}
+              "
+              data-voting-id="${
+                platform.id
+              }"
+              data-priority="${
+                platform.priority
+              }"
             >
 
-              <span
-                class="
-                  vote-card__category
-                "
+              <div
+                class="vote-card__top"
               >
-                ${getVoteTypeLabel(
-                  platform.vote_type
-                )}
-              </span>
 
-              <span
-                class="
-                  vote-card__priority
-                  ${getPriorityClass(
+                <span
+                  class="
+                    vote-card__category
+                  "
+                >
+                  ${categoryLabel}
+                </span>
+
+
+                <span
+                  class="
+                    vote-card__priority
+                    ${getPriorityClass(
+                      platform.priority
+                    )}
+                  "
+                >
+                  ${getPriorityLabel(
                     platform.priority
                   )}
-                "
-              >
-                ${getPriorityLabel(
-                  platform.priority
-                )}
-              </span>
+                </span>
 
-            </div>
-
-
-            <div
-              class="
-                vote-card__content
-              "
-            >
-
-              <h3
-                class="
-                  vote-card__title
-                "
-              >
-                ${platform.event}
-              </h3>
-
-              <p
-                class="
-                  vote-card__platform
-                "
-              >
-                ${platform.platform}
-              </p>
+              </div>
 
 
               <div
                 class="
-                  vote-card__details
+                  vote-card__content
                 "
               >
 
-                ${
-                  startDate
-                    ? `
-                      <span>
-                        ${getVotingText(
-                          'starts'
-                        )}: ${startDate}
-                      </span>
-                    `
-                    : ''
-                }
+                <h3
+                  class="
+                    vote-card__title
+                  "
+                >
+                  ${platform.event}
+                </h3>
+
+
+                <p
+                  class="
+                    vote-card__platform
+                  "
+                >
+                  ${platform.platform}
+                </p>
+
+
+                <div
+                  class="
+                    vote-card__details
+                  "
+                >
+
+                  ${
+                    startDate
+                      ? `
+                        <span>
+                          ${getVotingText(
+                            'starts'
+                          )}: ${startDate}
+                        </span>
+                      `
+                      : ''
+                  }
+
+
+                  ${
+                    deadline
+                      ? `
+                        <span>
+                          ${getVotingText(
+                            'deadline'
+                          )}: ${deadline}
+                        </span>
+                      `
+                      : ''
+                  }
+
+
+                  ${
+                    translatedFrequency
+                      ? `
+                        <span>
+                          ${getVotingText(
+                            'frequency'
+                          )}: ${translatedFrequency}
+                        </span>
+                      `
+                      : ''
+                  }
+
+                </div>
+
+              </div>
+
+
+              <div
+                class="
+                  vote-card__actions
+                "
+              >
+
+                <a
+                  class="
+                    btn
+                    btn-primary
+                  "
+                  href="${platform.url}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ${getVotingText(
+                    'voteNow'
+                  )}
+                </a>
+
 
                 ${
-                  deadline
+                  platform.tutorial_url
                     ? `
-                      <span>
+                      <a
+                        class="
+                          btn
+                          btn-secondary
+                        "
+                        href="${platform.tutorial_url}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         ${getVotingText(
-                          'deadline'
-                        )}: ${deadline}
-                      </span>
-                    `
-                    : ''
-                }
-
-                ${
-                  translatedFrequency
-                    ? `
-                      <span>
-                        ${getVotingText(
-                          'frequency'
-                        )}: ${translatedFrequency}
-                      </span>
+                          'viewTutorial'
+                        )}
+                      </a>
                     `
                     : ''
                 }
 
               </div>
 
-            </div>
-
-
-            <div
-              class="
-                vote-card__actions
-              "
-            >
-
-              <a
-                class="
-                  btn
-                  btn-primary
-                "
-                href="${platform.url}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                ${getVotingText(
-                  'voteNow'
-                )}
-              </a>
-
-              ${
-                platform.tutorial_url
-                  ? `
-                    <a
-                      class="
-                        btn
-                        btn-secondary
-                      "
-                      href="${platform.tutorial_url}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      ${getVotingText(
-                        'viewTutorial'
-                      )}
-                    </a>
-                  `
-                  : ''
-              }
-
-            </div>
-
-          </article>
-        `;
-      })
+            </article>
+          `;
+        }
+      )
       .join('');
+}
+
+
+// ================================
+// ORGANIZE VOTING TRANSLATIONS
+// ================================
+
+function organizePublicVotingTranslations(
+  rows = []
+) {
+  return rows.reduce(
+    (
+      result,
+      row
+    ) => {
+      if (
+        !result[
+          row.content_id
+        ]
+      ) {
+        result[
+          row.content_id
+        ] = {};
+      }
+
+
+      if (
+        !result[
+          row.content_id
+        ][row.language]
+      ) {
+        result[
+          row.content_id
+        ][row.language] = {};
+      }
+
+
+      result[
+        row.content_id
+      ][row.language][
+        row.field_name
+      ] =
+        row.translated_text;
+
+
+      return result;
+    },
+    {}
+  );
 }
 
 
@@ -3004,62 +3671,87 @@ function renderPublicVotingPlatforms(
 // ================================
 
 async function loadPublicVotingPlatforms() {
-  if (!publicVotingGrid) {
+  if (
+    !publicVotingGrid
+  ) {
     return;
   }
 
-  try {
-    publicVotingPlatforms =
-      await getActiveVotingPlatforms();
 
-    const translationRows =
-      await getTranslationsByType(
-        'voting'
-      );
+  try {
+    const [
+      votingPlatforms,
+      votingTranslationRows,
+      votingTabs,
+      votingTabTranslationRows,
+      votingTabAssignments,
+    ] =
+      await Promise.all([
+        getActiveVotingPlatforms(),
+
+        getTranslationsByType(
+          'voting'
+        ),
+
+        getActiveVotingTabs(),
+
+        getTranslationsByType(
+          'voting_tab'
+        ),
+
+        getVotingTabAssignments(),
+      ]);
+
+
+    publicVotingPlatforms =
+      votingPlatforms ??
+      [];
+
+
+    publicVotingTabs =
+      votingTabs ??
+      [];
+
+
+    publicVotingTabAssignments =
+      votingTabAssignments ??
+      [];
+
 
     publicVotingTranslations =
-      translationRows.reduce(
-        (result, row) => {
-          if (
-            !result[
-              row.content_id
-            ]
-          ) {
-            result[
-              row.content_id
-            ] = {};
-          }
-
-          if (
-            !result[
-              row.content_id
-            ][row.language]
-          ) {
-            result[
-              row.content_id
-            ][row.language] = {};
-          }
-
-          result[
-            row.content_id
-          ][row.language][
-            row.field_name
-          ] =
-            row.translated_text;
-
-          return result;
-        },
-        {}
+      organizePublicVotingTranslations(
+        votingTranslationRows
       );
 
-    if (activeVoteCount) {
+
+    publicVotingTabTranslations =
+      organizePublicVotingTranslations(
+        votingTabTranslationRows
+      );
+
+
+    if (
+      !publicVotingFilterExists(
+        currentPublicVoteFilter
+      )
+    ) {
+      currentPublicVoteFilter =
+        getDefaultPublicVotingFilter();
+    }
+
+
+    if (
+      activeVoteCount
+    ) {
       activeVoteCount.textContent =
         publicVotingPlatforms.length;
     }
 
+
     renderPublicVotingPlatforms(
       currentPublicVoteFilter
     );
+
 
   } catch (error) {
     publicVotingGrid.innerHTML = `
@@ -3074,10 +3766,14 @@ async function loadPublicVotingPlatforms() {
       </p>
     `;
 
-    if (activeVoteCount) {
+
+    if (
+      activeVoteCount
+    ) {
       activeVoteCount.textContent =
         '0';
     }
+
 
     console.error(
       'Unable to load public voting platforms:',
@@ -3091,41 +3787,55 @@ async function loadPublicVotingPlatforms() {
 // VOTING FILTERS
 // ================================
 
-voteFilters.forEach(
-  (filterButton) => {
-    filterButton.addEventListener(
-      'click',
-      () => {
-        const selectedFilter =
-          filterButton.dataset.filter;
-
-        currentPublicVoteFilter =
-          selectedFilter;
-
-        voteFilters.forEach(
-          (button) => {
-            button.classList.remove(
-              'is-active'
-            );
-          }
+if (
+  voteFiltersContainer
+) {
+  voteFiltersContainer.addEventListener(
+    'click',
+    (event) => {
+      const filterButton =
+        event.target.closest(
+          '.vote-filter'
         );
 
-        filterButton.classList.add(
-          'is-active'
-        );
 
-        renderPublicVotingPlatforms(
-          selectedFilter
-        );
+      if (
+        !filterButton ||
+        !voteFiltersContainer.contains(
+          filterButton
+        )
+      ) {
+        return;
       }
-    );
-  }
-);
+
+
+      const selectedFilter =
+        filterButton.dataset.filter;
+
+
+      if (
+        !selectedFilter
+      ) {
+        return;
+      }
+
+
+      currentPublicVoteFilter =
+        selectedFilter;
+
+
+      renderPublicVotingPlatforms(
+        selectedFilter
+      );
+    }
+  );
+}
 
 
 updatePublicVotingStaticText();
 
 loadPublicVotingPlatforms();
+
 // ================================
 // PUBLIC TUTORIALS
 // ================================
@@ -5458,6 +6168,12 @@ const siteContentMap = {
     body: '#heroBody',
     button: '#heroPrimaryButton',
     secondaryButton: '#heroSecondaryButton',
+  },
+
+  voting_intro: {
+    subtitle: '#votingSubtitle',
+    title: '#votingTitle',
+    body: '#votingBody',
   },
 
   tutorials_intro: {
@@ -8009,14 +8725,32 @@ try {
           </label>
 
           <label>
-            <input
-              type="checkbox"
-              name="active"
-              checked
-            />
 
-            <span>Active</span>
-          </label>
+  <input
+    type="checkbox"
+    name="show_in_priority"
+  />
+
+  <span>
+    Add to Priority tab
+  </span>
+
+</label>
+
+
+<label>
+
+  <input
+    type="checkbox"
+    name="active"
+    checked
+  />
+
+  <span>
+    Active
+  </span>
+
+</label>
 
           <button
             class="btn btn-primary"
@@ -8138,202 +8872,206 @@ try {
 
 
   // ================================
-  // ADD CONTENT
-  // ================================
+// ADD CONTENT
+// ================================
 
-  addContentButton.addEventListener(
-    'click',
-    () => {
-      adminPanelBody.innerHTML = `
-        <div class="admin-form-view">
+addContentButton.addEventListener(
+  'click',
+  () => {
+    adminPanelBody.innerHTML = `
+      <div class="admin-form-view">
 
-          <div class="admin-form-view__header">
+        <div class="admin-form-view__header">
 
-            <div>
-              <span class="eyebrow">
-                CONTENT
-              </span>
+          <div>
+            <span class="eyebrow">
+              CONTENT
+            </span>
 
-              <h3 class="admin-section-header__title">
-                Add Site Content
-              </h3>
+            <h3 class="admin-section-header__title">
+              Add Site Content
+            </h3>
 
-              <p class="admin-section-header__description">
-                Create reusable content for the public website. Text translations are generated automatically from English.
-              </p>
-            </div>
-
-            <button
-              class="btn btn-secondary"
-              type="button"
-              id="cancelAddContent"
-            >
-              ← Cancel
-            </button>
-
+            <p class="admin-section-header__description">
+              Create reusable content for the public website. Text translations are generated automatically from English.
+            </p>
           </div>
 
-          <form
-            class="admin-voting-form"
-            id="adminContentForm"
+          <button
+            class="btn btn-secondary"
+            type="button"
+            id="cancelAddContent"
+          >
+            ← Cancel
+          </button>
+
+        </div>
+
+        <form
+          class="admin-voting-form"
+          id="adminContentForm"
+        >
+
+          <label>
+            <span>Content Area</span>
+
+            <select
+              name="content_key"
+              id="addContentArea"
+              required
+            >
+              <option value="hero_main">
+                Hero
+              </option>
+
+              <option value="voting_intro">
+                Voting Section Intro
+              </option>
+
+              <option value="artists_intro">
+                Artists Section Intro
+              </option>
+
+              <option value="tutorials_intro">
+                Tutorials Section Intro
+              </option>
+
+              <option value="watch_intro">
+                Watch & Results Intro
+              </option>
+
+              <option value="support_intro">
+                Support Section Intro
+              </option>
+            </select>
+          </label>
+
+          <label>
+            <span>
+              Title — English
+            </span>
+
+            <input
+              type="text"
+              name="title"
+            />
+          </label>
+
+          <label style="grid-column: 1 / -1;">
+            <span>
+              Subtitle — English
+            </span>
+
+            <input
+              type="text"
+              name="subtitle"
+            />
+          </label>
+
+          <label style="grid-column: 1 / -1;">
+            <span>
+              Body — English
+            </span>
+
+            <textarea
+              name="body"
+              rows="5"
+            ></textarea>
+          </label>
+
+          <div
+            id="addContentButtonFields"
+            style="
+              display: none;
+              grid-column: 1 / -1;
+            "
           >
 
-            <label>
-              <span>Content Area</span>
-
-              <select
-                name="content_key"
-                id="addContentArea"
-                required
-              >
-                <option value="hero_main">
-                  Hero
-                </option>
-
-                <option value="artists_intro">
-                  Artists Section Intro
-                </option>
-
-                <option value="tutorials_intro">
-                  Tutorials Section Intro
-                </option>
-
-                <option value="watch_intro">
-                  Watch & Results Intro
-                </option>
-
-                <option value="support_intro">
-                  Support Section Intro
-                </option>
-              </select>
-            </label>
-
-            <label>
-              <span>
-                Title — English
-              </span>
-
-              <input
-                type="text"
-                name="title"
-              />
-            </label>
-
             <label style="grid-column: 1 / -1;">
-              <span>
-                Subtitle — English
-              </span>
-
-              <input
-                type="text"
-                name="subtitle"
-              />
-            </label>
-
-            <label style="grid-column: 1 / -1;">
-              <span>
-                Body — English
-              </span>
-
-              <textarea
-                name="body"
-                rows="5"
-              ></textarea>
-            </label>
-
-            <div
-              id="addContentButtonFields"
-              style="
-                display: none;
-                grid-column: 1 / -1;
-              "
-            >
-
-              <label style="grid-column: 1 / -1;">
-                <input
-                  type="checkbox"
-                  name="show_buttons"
-                  checked
-                />
-
-                <span>
-                  Show Hero Buttons
-                </span>
-              </label>
-
-              <label>
-                <span>
-                  Primary Button Label — English
-                </span>
-
-                <input
-                  type="text"
-                  name="button_label"
-                  placeholder="Start Voting"
-                />
-              </label>
-
-              <label>
-                <span>
-                  Primary Button URL
-                </span>
-
-                <input
-                  type="text"
-                  name="button_url"
-                  placeholder="#vote"
-                />
-              </label>
-
-              <label>
-                <span>
-                  Secondary Button Label — English
-                </span>
-
-                <input
-                  type="text"
-                  name="secondary_button_label"
-                  placeholder="View Tutorials"
-                />
-              </label>
-
-              <label>
-                <span>
-                  Secondary Button URL
-                </span>
-
-                <input
-                  type="text"
-                  name="secondary_button_url"
-                  placeholder="#tutorials"
-                />
-              </label>
-
-            </div>
-
-            <label>
               <input
                 type="checkbox"
-                name="active"
+                name="show_buttons"
                 checked
               />
 
               <span>
-                Active
+                Show Hero Buttons
               </span>
             </label>
 
-            <button
-              class="btn btn-primary"
-              type="submit"
-            >
-              Save & Translate
-            </button>
+            <label>
+              <span>
+                Primary Button Label — English
+              </span>
 
-          </form>
+              <input
+                type="text"
+                name="button_label"
+                placeholder="Start Voting"
+              />
+            </label>
 
-        </div>
-      `;
+            <label>
+              <span>
+                Primary Button URL
+              </span>
+
+              <input
+                type="text"
+                name="button_url"
+                placeholder="#vote"
+              />
+            </label>
+
+            <label>
+              <span>
+                Secondary Button Label — English
+              </span>
+
+              <input
+                type="text"
+                name="secondary_button_label"
+                placeholder="View Tutorials"
+              />
+            </label>
+
+            <label>
+              <span>
+                Secondary Button URL
+              </span>
+
+              <input
+                type="text"
+                name="secondary_button_url"
+                placeholder="#tutorials"
+              />
+            </label>
+
+          </div>
+
+          <label>
+            <input
+              type="checkbox"
+              name="active"
+              checked
+            />
+
+            <span>
+              Active
+            </span>
+          </label>
+
+          <button
+            class="btn btn-primary"
+            type="submit"
+          >
+            Save & Translate
+          </button>
+
+        </form>
+
+      </div>
+    `;
 
 
       // ================================
@@ -9882,73 +10620,85 @@ try {
                     </span>
 
                     <select
-                      name="content_key"
-                      id="editContentArea"
-                      required
-                    >
+  name="content_key"
+  id="editContentArea"
+  required
+>
 
-                      <option
-                        value="hero_main"
-                        ${
-                          content.content_key ===
-                          'hero_main'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Hero
-                      </option>
+  <option
+    value="hero_main"
+    ${
+      content.content_key ===
+      'hero_main'
+        ? 'selected'
+        : ''
+    }
+  >
+    Hero
+  </option>
 
-                      <option
-                        value="artists_intro"
-                        ${
-                          content.content_key ===
-                          'artists_intro'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Artists Section Intro
-                      </option>
+  <option
+    value="voting_intro"
+    ${
+      content.content_key ===
+      'voting_intro'
+        ? 'selected'
+        : ''
+    }
+  >
+    Voting Section Intro
+  </option>
 
-                      <option
-                        value="tutorials_intro"
-                        ${
-                          content.content_key ===
-                          'tutorials_intro'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Tutorials Section Intro
-                      </option>
+  <option
+    value="artists_intro"
+    ${
+      content.content_key ===
+      'artists_intro'
+        ? 'selected'
+        : ''
+    }
+  >
+    Artists Section Intro
+  </option>
 
-                      <option
-                        value="watch_intro"
-                        ${
-                          content.content_key ===
-                          'watch_intro'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Watch & Results Intro
-                      </option>
+  <option
+    value="tutorials_intro"
+    ${
+      content.content_key ===
+      'tutorials_intro'
+        ? 'selected'
+        : ''
+    }
+  >
+    Tutorials Section Intro
+  </option>
 
-                      <option
-                        value="support_intro"
-                        ${
-                          content.content_key ===
-                          'support_intro'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Support Section Intro
-                      </option>
+  <option
+    value="watch_intro"
+    ${
+      content.content_key ===
+      'watch_intro'
+        ? 'selected'
+        : ''
+    }
+  >
+    Watch & Results Intro
+  </option>
 
-                    </select>
-                  </label>
+  <option
+    value="support_intro"
+    ${
+      content.content_key ===
+      'support_intro'
+        ? 'selected'
+        : ''
+    }
+  >
+    Support Section Intro
+  </option>
+
+</select>
+</label>
 
 
                   <label>
@@ -10710,29 +11460,1427 @@ async function loadVotingAdminSection() {
 
     </div>
 
-    <div id="adminVotingList">
 
-      <p class="admin-panel__placeholder">
-        Loading voting platforms...
-      </p>
+    <!-- ================================
+         VOTING TABS
+    ================================= -->
+
+    <div
+      class="admin-content-group"
+      id="adminVotingTabs"
+    >
+
+      <div class="admin-content-group__header">
+
+        <div>
+
+          <span class="eyebrow">
+            VOTING TABS
+          </span>
+
+          <h4>
+            Voting Tabs
+          </h4>
+
+          <p class="admin-section-header__description">
+            Manage the public voting tabs, their descriptions and which tab opens by default.
+          </p>
+
+        </div>
+
+        <button
+          class="btn btn-primary"
+          type="button"
+          id="addVotingTabButton"
+        >
+          + Add Tab
+        </button>
+
+      </div>
+
+
+      <div id="adminVotingTabsContent">
+
+        <p class="admin-panel__placeholder">
+          Loading voting tabs...
+        </p>
+
+      </div>
+
+    </div>
+
+    <!-- ================================
+         VOTING PLATFORMS
+    ================================= -->
+
+    <div class="admin-content-group">
+
+      <div class="admin-content-group__header">
+
+        <div>
+
+          <span class="eyebrow">
+            VOTING
+          </span>
+
+          <h4>
+            Voting Opportunities
+          </h4>
+
+        </div>
+
+      </div>
+
+
+      <div id="adminVotingList">
+
+        <p class="admin-panel__placeholder">
+          Loading voting platforms...
+        </p>
+
+      </div>
 
     </div>
   `;
 
+
   const adminVotingList =
-    document.querySelector('#adminVotingList');
+    document.querySelector(
+      '#adminVotingList'
+    );
+
+
+  const adminVotingTabsContent =
+    document.querySelector(
+      '#adminVotingTabsContent'
+    );
+
 
   const addVotingButton =
-    document.querySelector('#addVotingButton');
+    document.querySelector(
+      '#addVotingButton'
+    );
+
+
+  const addVotingTabButton =
+    document.querySelector(
+      '#addVotingTabButton'
+    );
+
+
+  const canEditVotingTabs =
+    currentAdmin?.role ===
+      'developer' ||
+    currentAdmin?.role ===
+      'admin';
+
+
+  let votingTabs = [];
+
+  let votingTabAssignments = [];
+
+
+  // ================================
+  // HELPER — CREATE TAB KEY
+  // ================================
+
+  const createVotingTabKey = (
+    label,
+    currentId = null
+  ) => {
+    let baseKey =
+      label
+        .normalize('NFD')
+        .replace(
+          /[\u0300-\u036f]/g,
+          ''
+        )
+        .toLowerCase()
+        .trim()
+        .replace(
+          /[^a-z0-9]+/g,
+          '-'
+        )
+        .replace(
+          /^-+|-+$/g,
+          ''
+        );
+
+
+    if (!baseKey) {
+      baseKey = 'tab';
+    }
+
+
+    let finalKey =
+      baseKey;
+
+    let counter = 2;
+
+
+    while (
+      votingTabs.some(
+        (tab) =>
+          tab.tab_key ===
+            finalKey &&
+          tab.id !== currentId
+      )
+    ) {
+      finalKey =
+        `${baseKey}-${counter}`;
+
+      counter += 1;
+    }
+
+
+    return finalKey;
+  };
+
+
+  // ================================
+  // HELPER — TRANSLATE TAB
+  // ================================
+
+  const translateAndSaveVotingTab =
+    async (
+      tabId,
+      label,
+      description
+    ) => {
+      const {
+        data:
+          translationData,
+
+        error:
+          translationError,
+      } =
+        await supabase
+          .functions
+          .invoke(
+            'translate-content',
+            {
+              body: {
+                fields: {
+                  label:
+                    label ?? '',
+
+                  description:
+                    description ?? '',
+                },
+              },
+            }
+          );
+
+
+      if (translationError) {
+        throw translationError;
+      }
+
+
+      if (
+        !translationData
+          ?.translations
+      ) {
+        throw new Error(
+          'Translation service returned no translations.'
+        );
+      }
+
+
+      const normalizedTranslations =
+        Object.fromEntries(
+          Object.entries(
+            translationData.translations
+          ).map(
+            (
+              [
+                language,
+                fields,
+              ]
+            ) => [
+              language,
+              {
+                label:
+                  fields.label ??
+                  '',
+
+                description:
+                  description
+                    ? (
+                        fields.description ??
+                        ''
+                      )
+                    : '',
+              },
+            ]
+          )
+        );
+
+
+      // Remove every previous translation
+      // for this voting tab before saving
+      // the newly generated translations.
+      //
+      // This prevents an older translation
+      // from remaining visible after the
+      // English label or description changes.
+
+      const {
+        error:
+          deleteOldTranslationsError,
+      } =
+        await supabase
+          .from(
+            'lmsy_translations'
+          )
+          .delete()
+          .eq(
+            'content_type',
+            'voting_tab'
+          )
+          .eq(
+            'content_id',
+            tabId
+          );
+
+
+      if (
+        deleteOldTranslationsError
+      ) {
+        throw deleteOldTranslationsError;
+      }
+
+
+      await saveTranslations(
+        'voting_tab',
+        tabId,
+        normalizedTranslations
+      );
+    };
+
+
+  // ================================
+  // HELPER — CLEAR DEFAULT TAB
+  // ================================
+
+  const clearOtherDefaultTabs =
+    async () => {
+      const {
+        error,
+      } =
+        await supabase
+          .from(
+            'lmsy_voting_tabs'
+          )
+          .update({
+            is_default:
+              false,
+
+            updated_at:
+              new Date()
+                .toISOString(),
+          })
+          .eq(
+            'is_default',
+            true
+          );
+
+
+      if (error) {
+        throw error;
+      }
+    };
+
+
+  // ================================
+  // LOAD VOTING TABS
+  // ================================
+
+  try {
+    [
+      votingTabs,
+      votingTabAssignments,
+    ] =
+      await Promise.all([
+        getVotingTabs(),
+        getVotingTabAssignments(),
+      ]);
+
+
+    const allTabCard = `
+      <article class="admin-voting-item">
+
+        <div class="admin-voting-item__info">
+
+          <div class="admin-voting-item__top">
+
+            <strong class="admin-voting-item__event">
+              All
+            </strong>
+
+            <span class="admin-voting-item__status">
+              Automatic
+            </span>
+
+          </div>
+
+          <span class="admin-voting-item__platform">
+            Shows all active voting opportunities.
+          </span>
+
+          <span class="admin-voting-item__meta">
+            This tab is automatic and cannot be edited or deleted.
+          </span>
+
+        </div>
+
+      </article>
+    `;
+
+
+    const dynamicTabCards =
+      votingTabs.length === 0
+        ? `
+          <p class="admin-panel__placeholder">
+            No voting tabs yet.
+          </p>
+        `
+        : votingTabs
+            .map(
+              (tab) => {
+                const assignmentsCount =
+                  votingTabAssignments
+                    .filter(
+                      (assignment) =>
+                        assignment.tab_id ===
+                        tab.id
+                    )
+                    .length;
+
+
+                return `
+                  <article
+                    class="admin-voting-item"
+                    data-voting-tab-id="${tab.id}"
+                  >
+
+                    <div class="admin-voting-item__info">
+
+                      <div class="admin-voting-item__top">
+
+                        <strong class="admin-voting-item__event">
+                          ${tab.label}
+                        </strong>
+
+                        <span class="admin-voting-item__status">
+                          ${
+                            tab.active
+                              ? 'Active'
+                              : 'Inactive'
+                          }
+                        </span>
+
+                      </div>
+
+
+                      ${
+                        tab.description
+                          ? `
+                            <span class="admin-voting-item__platform">
+                              ${tab.description}
+                            </span>
+                          `
+                          : ''
+                      }
+
+
+                      <span class="admin-voting-item__meta">
+                        Order ${tab.sort_order ?? 0}
+                        · ${assignmentsCount} ${
+                          assignmentsCount === 1
+                            ? 'voting'
+                            : 'votings'
+                        }
+                        ${
+                          tab.is_default
+                            ? ' · Default'
+                            : ''
+                        }
+                      </span>
+
+                    </div>
+
+
+                    ${
+                      canEditVotingTabs
+                        ? `
+                          <div class="admin-voting-item__actions">
+
+                            <button
+                              class="btn btn-secondary"
+                              type="button"
+                              data-edit-voting-tab="${tab.id}"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              class="btn btn-secondary"
+                              type="button"
+                              data-delete-voting-tab="${tab.id}"
+                              ${
+                                tab.is_default
+                                  ? 'disabled'
+                                  : ''
+                              }
+                            >
+                              Delete
+                            </button>
+
+                          </div>
+                        `
+                        : ''
+                    }
+
+                  </article>
+                `;
+              }
+            )
+            .join('');
+
+
+    adminVotingTabsContent.innerHTML = `
+      <div
+        style="
+          display: grid;
+          gap: 12px;
+        "
+      >
+        ${allTabCard}
+        ${dynamicTabCards}
+      </div>
+    `;
+
+
+    if (!canEditVotingTabs) {
+      addVotingTabButton.style.display =
+        'none';
+    }
 
 
     // ================================
+    // ADD VOTING TAB
+    // ================================
+
+    if (canEditVotingTabs) {
+      addVotingTabButton.addEventListener(
+        'click',
+        () => {
+          const nextSortOrder =
+            votingTabs.length > 0
+              ? Math.max(
+                  ...votingTabs.map(
+                    (tab) =>
+                      Number(
+                        tab.sort_order ??
+                        0
+                      )
+                  )
+                ) + 1
+              : 1;
+
+
+          adminPanelBody.innerHTML = `
+            <div class="admin-form-view">
+
+              <div class="admin-form-view__header">
+
+                <div>
+
+                  <span class="eyebrow">
+                    VOTING TABS
+                  </span>
+
+                  <h3 class="admin-section-header__title">
+                    Add Voting Tab
+                  </h3>
+
+                  <p class="admin-section-header__description">
+                    Create a new public voting tab. Label and description translations are generated automatically from English.
+                  </p>
+
+                </div>
+
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  id="cancelAddVotingTab"
+                >
+                  ← Cancel
+                </button>
+
+              </div>
+
+
+              <form
+                class="admin-voting-form"
+                id="adminVotingTabForm"
+              >
+
+                <label>
+                  <span>
+                    Tab label — English
+                  </span>
+
+                  <input
+                    type="text"
+                    name="label"
+                    required
+                  />
+                </label>
+
+
+                <label>
+                  <span>
+                    Sort order
+                  </span>
+
+                  <input
+                    type="number"
+                    name="sort_order"
+                    value="${nextSortOrder}"
+                  />
+                </label>
+
+
+                <label
+                  style="
+                    grid-column: 1 / -1;
+                  "
+                >
+                  <span>
+                    Description — English
+                  </span>
+
+                  <textarea
+                    name="description"
+                    rows="3"
+                  ></textarea>
+                </label>
+
+
+                <label>
+
+                  <input
+                    type="checkbox"
+                    name="active"
+                    checked
+                  />
+
+                  <span>
+                    Active
+                  </span>
+
+                </label>
+
+
+                <label>
+
+                  <input
+                    type="checkbox"
+                    name="is_default"
+                  />
+
+                  <span>
+                    Make this the default tab
+                  </span>
+
+                </label>
+
+
+                <p
+                  class="admin-login-form__message"
+                  id="votingTabFormMessage"
+                  aria-live="polite"
+                  style="
+                    grid-column: 1 / -1;
+                  "
+                ></p>
+
+
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                >
+                  Save & Translate
+                </button>
+
+              </form>
+
+            </div>
+          `;
+
+
+          const cancelAddVotingTab =
+            document.querySelector(
+              '#cancelAddVotingTab'
+            );
+
+
+          cancelAddVotingTab
+            .addEventListener(
+              'click',
+              () => {
+                loadVotingAdminSection();
+              }
+            );
+
+
+          const adminVotingTabForm =
+            document.querySelector(
+              '#adminVotingTabForm'
+            );
+
+
+          const votingTabFormMessage =
+            document.querySelector(
+              '#votingTabFormMessage'
+            );
+
+
+          adminVotingTabForm
+            .addEventListener(
+              'submit',
+              async (event) => {
+                event.preventDefault();
+
+
+                const formData =
+                  new FormData(
+                    adminVotingTabForm
+                  );
+
+
+                const label =
+                  formData
+                    .get('label')
+                    .trim();
+
+
+                const description =
+                  formData
+                    .get('description')
+                    .trim() ||
+                  null;
+
+
+                const isDefault =
+                  formData.get(
+                    'is_default'
+                  ) === 'on';
+
+
+                const tabData = {
+                  tab_key:
+                    createVotingTabKey(
+                      label
+                    ),
+
+                  label,
+
+                  description,
+
+                  active:
+                    isDefault
+                      ? true
+                      : (
+                          formData.get(
+                            'active'
+                          ) === 'on'
+                        ),
+
+                  sort_order:
+                    Number(
+                      formData.get(
+                        'sort_order'
+                      )
+                    ) || 0,
+
+                  is_default:
+                    isDefault,
+                };
+
+
+                const saveButton =
+                  adminVotingTabForm
+                    .querySelector(
+                      'button[type="submit"]'
+                    );
+
+
+                try {
+                  saveButton.disabled =
+                    true;
+
+                  saveButton.textContent =
+                    'Saving...';
+
+                  votingTabFormMessage
+                    .textContent =
+                    '';
+
+
+                  if (isDefault) {
+                    await clearOtherDefaultTabs();
+                  }
+
+
+                  const createdTab =
+                    await createVotingTab(
+                      tabData
+                    );
+
+
+                  saveButton.textContent =
+                    'Translating...';
+
+
+                  await translateAndSaveVotingTab(
+                    createdTab.id,
+                    label,
+                    description
+                  );
+
+
+                  await loadPublicVotingPlatforms();
+
+
+                  saveButton.textContent =
+                    'Saved ✓';
+
+
+                  setTimeout(
+                    async () => {
+                      await loadVotingAdminSection();
+                    },
+                    700
+                  );
+
+
+                } catch (error) {
+                  saveButton.disabled =
+                    false;
+
+                  saveButton.textContent =
+                    'Save & Translate';
+
+                  votingTabFormMessage
+                    .textContent =
+                    error.message ||
+                    'Unable to create voting tab.';
+
+
+                  console.error(
+                    'Unable to create voting tab:',
+                    error
+                  );
+                }
+              }
+            );
+        }
+      );
+
+
+      // ================================
+      // EDIT VOTING TAB
+      // ================================
+
+      const editVotingTabButtons =
+        document.querySelectorAll(
+          '[data-edit-voting-tab]'
+        );
+
+
+      editVotingTabButtons.forEach(
+        (button) => {
+          button.addEventListener(
+            'click',
+            () => {
+              const tabId =
+                Number(
+                  button.dataset
+                    .editVotingTab
+                );
+
+
+              const tab =
+                votingTabs.find(
+                  (item) =>
+                    item.id ===
+                    tabId
+                );
+
+
+              if (!tab) {
+                return;
+              }
+
+
+              adminPanelBody.innerHTML = `
+                <div class="admin-form-view">
+
+                  <div class="admin-form-view__header">
+
+                    <div>
+
+                      <span class="eyebrow">
+                        VOTING TABS
+                      </span>
+
+                      <h3 class="admin-section-header__title">
+                        Edit Voting Tab
+                      </h3>
+
+                      <p class="admin-section-header__description">
+                        Update this voting tab. Label and description translations are generated automatically from English.
+                      </p>
+
+                    </div>
+
+                    <button
+                      class="btn btn-secondary"
+                      type="button"
+                      id="cancelEditVotingTab"
+                    >
+                      ← Cancel
+                    </button>
+
+                  </div>
+
+
+                  <form
+                    class="admin-voting-form"
+                    id="adminEditVotingTabForm"
+                  >
+
+                    <label>
+                      <span>
+                        Tab label — English
+                      </span>
+
+                      <input
+                        type="text"
+                        name="label"
+                        value="${tab.label ?? ''}"
+                        required
+                      />
+                    </label>
+
+
+                    <label>
+                      <span>
+                        Sort order
+                      </span>
+
+                      <input
+                        type="number"
+                        name="sort_order"
+                        value="${tab.sort_order ?? 0}"
+                      />
+                    </label>
+
+
+                    <label
+                      style="
+                        grid-column: 1 / -1;
+                      "
+                    >
+                      <span>
+                        Description — English
+                      </span>
+
+                      <textarea
+                        name="description"
+                        rows="3"
+                      >${tab.description ?? ''}</textarea>
+                    </label>
+
+
+                    <label>
+
+                      <input
+                        type="checkbox"
+                        name="active"
+                        ${
+                          tab.active
+                            ? 'checked'
+                            : ''
+                        }
+                        ${
+                          tab.is_default
+                            ? 'disabled'
+                            : ''
+                        }
+                      />
+
+                      <span>
+                        Active
+                      </span>
+
+                    </label>
+
+
+                    <label>
+
+                      <input
+                        type="checkbox"
+                        name="is_default"
+                        ${
+                          tab.is_default
+                            ? 'checked'
+                            : ''
+                        }
+                      />
+
+                      <span>
+                        Default tab
+                      </span>
+
+                    </label>
+
+
+                    ${
+                      tab.is_default
+                        ? `
+                          <p
+                            class="admin-section-header__description"
+                            style="
+                              grid-column: 1 / -1;
+                              margin: 0;
+                            "
+                          >
+                            The default tab must remain active. Make another tab the default before deleting this one.
+                          </p>
+                        `
+                        : ''
+                    }
+
+
+                    <p
+                      class="admin-login-form__message"
+                      id="editVotingTabMessage"
+                      aria-live="polite"
+                      style="
+                        grid-column: 1 / -1;
+                      "
+                    ></p>
+
+
+                    <button
+                      class="btn btn-primary"
+                      type="submit"
+                    >
+                      Save & Translate
+                    </button>
+
+                  </form>
+
+                </div>
+              `;
+
+
+              const cancelEditVotingTab =
+                document.querySelector(
+                  '#cancelEditVotingTab'
+                );
+
+
+              cancelEditVotingTab
+                .addEventListener(
+                  'click',
+                  () => {
+                    loadVotingAdminSection();
+                  }
+                );
+
+
+              const adminEditVotingTabForm =
+                document.querySelector(
+                  '#adminEditVotingTabForm'
+                );
+
+
+              const editVotingTabMessage =
+                document.querySelector(
+                  '#editVotingTabMessage'
+                );
+
+
+              adminEditVotingTabForm
+                .addEventListener(
+                  'submit',
+                  async (event) => {
+                    event.preventDefault();
+
+
+                    const formData =
+                      new FormData(
+                        adminEditVotingTabForm
+                      );
+
+
+                    const label =
+                      formData
+                        .get('label')
+                        .trim();
+
+
+                    const description =
+                      formData
+                        .get('description')
+                        .trim() ||
+                      null;
+
+
+                    const wantsDefault =
+                      formData.get(
+                        'is_default'
+                      ) === 'on';
+
+
+                    if (
+                      tab.is_default &&
+                      !wantsDefault
+                    ) {
+                      editVotingTabMessage
+                        .textContent =
+                        'Make another tab the default first.';
+
+                      return;
+                    }
+
+
+                    const tabData = {
+                      tab_key:
+                        createVotingTabKey(
+                          label,
+                          tab.id
+                        ),
+
+                      label,
+
+                      description,
+
+                      active:
+                        wantsDefault
+                          ? true
+                          : (
+                              formData.get(
+                                'active'
+                              ) === 'on'
+                            ),
+
+                      sort_order:
+                        Number(
+                          formData.get(
+                            'sort_order'
+                          )
+                        ) || 0,
+
+                      is_default:
+                        wantsDefault,
+                    };
+
+
+                    const saveButton =
+                      adminEditVotingTabForm
+                        .querySelector(
+                          'button[type="submit"]'
+                        );
+
+
+                    try {
+                      saveButton.disabled =
+                        true;
+
+                      saveButton.textContent =
+                        'Saving...';
+
+                      editVotingTabMessage
+                        .textContent =
+                        '';
+
+
+                      if (
+                        wantsDefault &&
+                        !tab.is_default
+                      ) {
+                        await clearOtherDefaultTabs();
+                      }
+
+
+                      await updateVotingTab(
+                        tab.id,
+                        tabData
+                      );
+
+
+                      saveButton.textContent =
+                        'Translating...';
+
+
+                      await translateAndSaveVotingTab(
+                        tab.id,
+                        label,
+                        description
+                      );
+
+
+                      await loadPublicVotingPlatforms();
+
+
+                      saveButton.textContent =
+                        'Saved ✓';
+
+
+                      setTimeout(
+                        async () => {
+                          await loadVotingAdminSection();
+                        },
+                        700
+                      );
+
+
+                    } catch (error) {
+                      saveButton.disabled =
+                        false;
+
+                      saveButton.textContent =
+                        'Save & Translate';
+
+                      editVotingTabMessage
+                        .textContent =
+                        error.message ||
+                        'Unable to update voting tab.';
+
+
+                      console.error(
+                        'Unable to update voting tab:',
+                        error
+                      );
+                    }
+                  }
+                );
+            }
+          );
+        }
+      );
+
+
+      // ================================
+      // DELETE VOTING TAB
+      // ================================
+
+      const deleteVotingTabButtons =
+        document.querySelectorAll(
+          '[data-delete-voting-tab]'
+        );
+
+
+      deleteVotingTabButtons.forEach(
+        (button) => {
+          button.addEventListener(
+            'click',
+            async () => {
+              const tabId =
+                Number(
+                  button.dataset
+                    .deleteVotingTab
+                );
+
+
+              const tab =
+                votingTabs.find(
+                  (item) =>
+                    item.id ===
+                    tabId
+                );
+
+
+              if (!tab) {
+                return;
+              }
+
+
+              if (tab.is_default) {
+                window.alert(
+                  'The default tab cannot be deleted. Make another tab the default first.'
+                );
+
+                return;
+              }
+
+
+              const confirmed =
+                window.confirm(
+                  `Delete "${tab.label}"?\n\nVoting assignments for this tab will also be removed. This action cannot be undone.`
+                );
+
+
+              if (!confirmed) {
+                return;
+              }
+
+
+              try {
+                button.disabled =
+                  true;
+
+                button.textContent =
+                  'Deleting...';
+
+
+                const {
+                  error:
+                    translationDeleteError,
+                } =
+                  await supabase
+                    .from(
+                      'lmsy_translations'
+                    )
+                    .delete()
+                    .eq(
+                      'content_type',
+                      'voting_tab'
+                    )
+                    .eq(
+                      'content_id',
+                      tab.id
+                    );
+
+
+                if (
+                  translationDeleteError
+                ) {
+                  throw translationDeleteError;
+                }
+
+
+                await deleteVotingTab(
+                  tab.id
+                );
+
+
+                await loadPublicVotingPlatforms();
+
+
+                await loadVotingAdminSection();
+
+
+              } catch (error) {
+                button.disabled =
+                  false;
+
+                button.textContent =
+                  'Delete';
+
+
+                console.error(
+                  'Unable to delete voting tab:',
+                  error
+                );
+              }
+            }
+          );
+        }
+      );
+    }
+
+
+  } catch (error) {
+    adminVotingTabsContent.innerHTML = `
+      <p class="admin-panel__placeholder">
+        Unable to load voting tabs.
+      </p>
+    `;
+
+
+    console.error(
+      'Unable to load voting tabs:',
+      error
+    );
+  }
+
+
+  // ================================
   // ADD VOTING
   // ================================
 
   addVotingButton.addEventListener(
     'click',
-    () => {
+    async () => {
+      try {
+        votingTabs =
+          await getVotingTabs();
+
+      } catch (error) {
+        console.error(
+          'Unable to load voting tabs for Add Voting:',
+          error
+        );
+
+        return;
+      }
+
+
+      const availableVotingTabs =
+        votingTabs.filter(
+          (tab) =>
+            tab.active
+        );
+
+
+      const defaultVotingTab =
+        availableVotingTabs.find(
+          (tab) =>
+            tab.is_default
+        );
+
+
+      const votingTabCheckboxes =
+        availableVotingTabs.length === 0
+          ? `
+            <p class="admin-panel__placeholder">
+              No active voting tabs are available. Create or activate a tab first.
+            </p>
+          `
+          : availableVotingTabs
+              .map(
+                (tab) => `
+                  <label>
+
+                    <input
+                      type="checkbox"
+                      name="voting_tabs"
+                      value="${tab.id}"
+                      ${
+                        tab.id ===
+                        defaultVotingTab?.id
+                          ? 'checked'
+                          : ''
+                      }
+                    />
+
+                    <span>
+                      ${tab.label}
+                    </span>
+
+                  </label>
+                `
+              )
+              .join('');
+
+
       adminPanelBody.innerHTML = `
         <div class="admin-form-view">
 
@@ -10806,32 +12954,6 @@ async function loadVotingAdminSection() {
                 name="url"
                 required
               />
-            </label>
-
-
-            <label>
-              <span>
-                Voting type
-              </span>
-
-              <select
-                name="vote_type"
-                required
-              >
-
-                <option value="ceremony">
-                  Awards & Ceremonies
-                </option>
-
-                <option value="poll">
-                  Poll
-                </option>
-
-                <option value="advertising">
-                  Advertising
-                </option>
-
-              </select>
             </label>
 
 
@@ -10951,6 +13073,35 @@ async function loadVotingAdminSection() {
             </label>
 
 
+            <div
+              style="
+                grid-column: 1 / -1;
+              "
+            >
+
+              <span
+                style="
+                  display: block;
+                  margin-bottom: 10px;
+                  font-weight: 600;
+                "
+              >
+                Show in tabs
+              </span>
+
+
+              <div
+                style="
+                  display: grid;
+                  gap: 10px;
+                "
+              >
+                ${votingTabCheckboxes}
+              </div>
+
+            </div>
+
+
             <label>
 
               <input
@@ -11011,6 +13162,64 @@ async function loadVotingAdminSection() {
             );
 
 
+          const selectedTabIds =
+            formData
+              .getAll(
+                'voting_tabs'
+              )
+              .map(
+                (tabId) =>
+                  Number(tabId)
+              );
+
+
+          const selectedTabs =
+            votingTabs.filter(
+              (tab) =>
+                selectedTabIds
+                  .includes(
+                    tab.id
+                  )
+            );
+
+
+          const selectedTabKeys =
+            selectedTabs.map(
+              (tab) =>
+                tab.tab_key
+            );
+
+
+          let legacyVoteType =
+            'poll';
+
+
+          if (
+            selectedTabKeys.includes(
+              'ceremony'
+            )
+          ) {
+            legacyVoteType =
+              'ceremony';
+
+          } else if (
+            selectedTabKeys.includes(
+              'advertising'
+            )
+          ) {
+            legacyVoteType =
+              'advertising';
+
+          } else if (
+            selectedTabKeys.includes(
+              'poll'
+            )
+          ) {
+            legacyVoteType =
+              'poll';
+          }
+
+
           const votingData = {
             event:
               formData
@@ -11028,15 +13237,18 @@ async function loadVotingAdminSection() {
                 .trim(),
 
             vote_type:
-              formData.get(
-                'vote_type'
-              ),
+              legacyVoteType,
 
             priority:
               Number(
                 formData.get(
                   'priority'
                 )
+              ),
+
+            show_in_priority:
+              selectedTabKeys.includes(
+                'priority'
               ),
 
             accent:
@@ -11102,6 +13314,12 @@ async function loadVotingAdminSection() {
               await createVotingPlatform(
                 votingData
               );
+
+
+            await replaceVotingTabAssignments(
+              createdVoting.id,
+              selectedTabIds
+            );
 
 
             const {
@@ -11185,6 +13403,7 @@ async function loadVotingAdminSection() {
               700
             );
 
+
           } catch (error) {
             saveButton.disabled =
               false;
@@ -11209,8 +13428,24 @@ async function loadVotingAdminSection() {
   // ================================
 
   try {
-    const platforms =
-      await getVotingPlatforms();
+    const [
+      platforms,
+      latestVotingTabs,
+      latestAssignments,
+    ] =
+      await Promise.all([
+        getVotingPlatforms(),
+        getVotingTabs(),
+        getVotingTabAssignments(),
+      ]);
+
+
+    votingTabs =
+      latestVotingTabs;
+
+    votingTabAssignments =
+      latestAssignments;
+
 
     if (platforms.length === 0) {
       adminVotingList.innerHTML = `
@@ -11222,62 +13457,105 @@ async function loadVotingAdminSection() {
       return;
     }
 
-    adminVotingList.innerHTML = platforms
-      .map((platform) => {
-        return `
-          <article
-            class="admin-voting-item"
-            data-voting-id="${platform.id}"
-          >
 
-            <div class="admin-voting-item__info">
+    adminVotingList.innerHTML =
+      platforms
+        .map(
+          (platform) => {
+            const assignedTabIds =
+              votingTabAssignments
+                .filter(
+                  (assignment) =>
+                    assignment.voting_id ===
+                    platform.id
+                )
+                .map(
+                  (assignment) =>
+                    assignment.tab_id
+                );
 
-              <div class="admin-voting-item__top">
 
-                <strong class="admin-voting-item__event">
-                  ${platform.event}
-                </strong>
+            const assignedTabs =
+              votingTabs
+                .filter(
+                  (tab) =>
+                    assignedTabIds
+                      .includes(
+                        tab.id
+                      )
+                )
+                .map(
+                  (tab) =>
+                    tab.label
+                );
 
-                <span class="admin-voting-item__status">
-                  ${platform.active ? 'Active' : 'Inactive'}
-                </span>
 
-              </div>
-
-              <span class="admin-voting-item__platform">
-                ${platform.platform}
-              </span>
-
-              <span class="admin-voting-item__meta">
-                ${platform.vote_type} · Priority ${platform.priority}
-              </span>
-
-            </div>
-
-            <div class="admin-voting-item__actions">
-
-              <button
-                class="btn btn-secondary"
-                type="button"
-                data-edit-voting="${platform.id}"
+            return `
+              <article
+                class="admin-voting-item"
+                data-voting-id="${platform.id}"
               >
-                Edit
-              </button>
 
-              <button
-                class="btn btn-secondary"
-                type="button"
-                data-delete-voting="${platform.id}"
-              >
-                Delete
-              </button>
+                <div class="admin-voting-item__info">
 
-            </div>
+                  <div class="admin-voting-item__top">
 
-          </article>
-        `;
-      })
-      .join('');
+                    <strong class="admin-voting-item__event">
+                      ${platform.event}
+                    </strong>
+
+                    <span class="admin-voting-item__status">
+                      ${
+                        platform.active
+                          ? 'Active'
+                          : 'Inactive'
+                      }
+                    </span>
+
+                  </div>
+
+                  <span class="admin-voting-item__platform">
+                    ${platform.platform}
+                  </span>
+
+                  <span class="admin-voting-item__meta">
+                    Priority ${platform.priority}
+                    · ${
+                      assignedTabs.length > 0
+                        ? assignedTabs.join(
+                            ', '
+                          )
+                        : 'No tabs'
+                    }
+                  </span>
+
+                </div>
+
+                <div class="admin-voting-item__actions">
+
+                  <button
+                    class="btn btn-secondary"
+                    type="button"
+                    data-edit-voting="${platform.id}"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    class="btn btn-secondary"
+                    type="button"
+                    data-delete-voting="${platform.id}"
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
+              </article>
+            `;
+          }
+        )
+        .join('');
 
 
     // ================================
@@ -11313,6 +13591,71 @@ async function loadVotingAdminSection() {
             if (!platform) {
               return;
             }
+
+
+            const currentAssignments =
+              votingTabAssignments
+                .filter(
+                  (assignment) =>
+                    assignment.voting_id ===
+                    votingId
+                )
+                .map(
+                  (assignment) =>
+                    assignment.tab_id
+                );
+
+
+            const availableTabs =
+              votingTabs.filter(
+                (tab) =>
+                  tab.active ||
+                  currentAssignments
+                    .includes(
+                      tab.id
+                    )
+              );
+
+
+            const votingTabCheckboxes =
+              availableTabs.length === 0
+                ? `
+                  <p class="admin-panel__placeholder">
+                    No voting tabs are available.
+                  </p>
+                `
+                : availableTabs
+                    .map(
+                      (tab) => `
+                        <label>
+
+                          <input
+                            type="checkbox"
+                            name="voting_tabs"
+                            value="${tab.id}"
+                            ${
+                              currentAssignments
+                                .includes(
+                                  tab.id
+                                )
+                                ? 'checked'
+                                : ''
+                            }
+                          />
+
+                          <span>
+                            ${tab.label}
+                            ${
+                              !tab.active
+                                ? ' (Inactive)'
+                                : ''
+                            }
+                          </span>
+
+                        </label>
+                      `
+                    )
+                    .join('');
 
 
             const startDateValue =
@@ -11420,56 +13763,6 @@ async function loadVotingAdminSection() {
                       }"
                       required
                     />
-                  </label>
-
-
-                  <label>
-                    <span>
-                      Voting type
-                    </span>
-
-                    <select
-                      name="vote_type"
-                      required
-                    >
-
-                      <option
-                        value="ceremony"
-                        ${
-                          platform.vote_type ===
-                          'ceremony'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Awards & Ceremonies
-                      </option>
-
-                      <option
-                        value="poll"
-                        ${
-                          platform.vote_type ===
-                          'poll'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Poll
-                      </option>
-
-                      <option
-                        value="advertising"
-                        ${
-                          platform.vote_type ===
-                          'advertising'
-                            ? 'selected'
-                            : ''
-                        }
-                      >
-                        Advertising
-                      </option>
-
-                    </select>
                   </label>
 
 
@@ -11646,6 +13939,35 @@ async function loadVotingAdminSection() {
                   </label>
 
 
+                  <div
+                    style="
+                      grid-column: 1 / -1;
+                    "
+                  >
+
+                    <span
+                      style="
+                        display: block;
+                        margin-bottom: 10px;
+                        font-weight: 600;
+                      "
+                    >
+                      Show in tabs
+                    </span>
+
+
+                    <div
+                      style="
+                        display: grid;
+                        gap: 10px;
+                      "
+                    >
+                      ${votingTabCheckboxes}
+                    </div>
+
+                  </div>
+
+
                   <label>
 
                     <input
@@ -11712,6 +14034,65 @@ async function loadVotingAdminSection() {
                     );
 
 
+                  const selectedTabIds =
+                    formData
+                      .getAll(
+                        'voting_tabs'
+                      )
+                      .map(
+                        (tabId) =>
+                          Number(tabId)
+                      );
+
+
+                  const selectedTabs =
+                    votingTabs.filter(
+                      (tab) =>
+                        selectedTabIds
+                          .includes(
+                            tab.id
+                          )
+                    );
+
+
+                  const selectedTabKeys =
+                    selectedTabs.map(
+                      (tab) =>
+                        tab.tab_key
+                    );
+
+
+                  let legacyVoteType =
+                    platform.vote_type ||
+                    'poll';
+
+
+                  if (
+                    selectedTabKeys.includes(
+                      'ceremony'
+                    )
+                  ) {
+                    legacyVoteType =
+                      'ceremony';
+
+                  } else if (
+                    selectedTabKeys.includes(
+                      'advertising'
+                    )
+                  ) {
+                    legacyVoteType =
+                      'advertising';
+
+                  } else if (
+                    selectedTabKeys.includes(
+                      'poll'
+                    )
+                  ) {
+                    legacyVoteType =
+                      'poll';
+                  }
+
+
                   const votingData = {
                     event:
                       formData
@@ -11729,15 +14110,18 @@ async function loadVotingAdminSection() {
                         .trim(),
 
                     vote_type:
-                      formData.get(
-                        'vote_type'
-                      ),
+                      legacyVoteType,
 
                     priority:
                       Number(
                         formData.get(
                           'priority'
                         )
+                      ),
+
+                    show_in_priority:
+                      selectedTabKeys.includes(
+                        'priority'
                       ),
 
                     accent:
@@ -11807,6 +14191,12 @@ async function loadVotingAdminSection() {
                     );
 
 
+                    await replaceVotingTabAssignments(
+                      votingId,
+                      selectedTabIds
+                    );
+
+
                     const {
                       data:
                         translationData,
@@ -11820,12 +14210,12 @@ async function loadVotingAdminSection() {
                           'translate-content',
                           {
                             body: {
-  fields: {
-    frequency:
-      votingData.frequency ??
-      '',
-  },
-},
+                              fields: {
+                                frequency:
+                                  votingData.frequency ??
+                                  '',
+                              },
+                            },
                           }
                         );
 
@@ -11846,6 +14236,7 @@ async function loadVotingAdminSection() {
                       );
                     }
 
+
                     const normalizedTranslations =
                       Object.fromEntries(
                         Object.entries(
@@ -11865,14 +14256,13 @@ async function loadVotingAdminSection() {
 
 
                     await saveTranslations(
-  'voting',
-  votingId,
-  normalizedTranslations
-);
+                      'voting',
+                      votingId,
+                      normalizedTranslations
+                    );
 
 
                     await loadPublicVotingPlatforms();
-
 
                     await loadPublicTutorials();
 
@@ -11887,6 +14277,7 @@ async function loadVotingAdminSection() {
                       },
                       700
                     );
+
 
                   } catch (error) {
                     saveChangesButton.disabled =
@@ -11909,7 +14300,8 @@ async function loadVotingAdminSection() {
       }
     );
 
-        // ================================
+
+    // ================================
     // DELETE VOTING
     // ================================
 
@@ -12091,7 +14483,7 @@ async function loadTutorialAdminSection() {
   const addTutorialButton =
     document.querySelector('#addTutorialButton');
 
-    // ================================
+  // ================================
   // ADD TUTORIAL
   // ================================
 
@@ -12470,17 +14862,17 @@ try {
   ];
 
   if (combinedTutorials.length === 0) {
-  adminTutorialList.innerHTML = `
-    <p class="admin-panel__placeholder">
-      No tutorials yet.
-    </p>
-  `;
+    adminTutorialList.innerHTML = `
+      <p class="admin-panel__placeholder">
+        No tutorials yet.
+      </p>
+    `;
 
-  return;
-}
+    return;
+  }
 
-adminTutorialList.innerHTML = combinedTutorials
-  .map((tutorial) => {
+  adminTutorialList.innerHTML = combinedTutorials
+    .map((tutorial) => {
       return `
         <article
           class="admin-voting-item"
@@ -12519,37 +14911,37 @@ adminTutorialList.innerHTML = combinedTutorials
 
           <div class="admin-voting-item__actions">
 
-  ${
-    tutorial.source === 'voting'
-      ? `
-        <button
-          class="btn btn-secondary"
-          type="button"
-          data-edit-voting-from-tutorial="${tutorial.voting_id}"
-        >
-          Edit Voting
-        </button>
-      `
-      : `
-        <button
-          class="btn btn-secondary"
-          type="button"
-          data-edit-tutorial="${tutorial.id}"
-        >
-          Edit
-        </button>
+            ${
+              tutorial.source === 'voting'
+                ? `
+                  <button
+                    class="btn btn-secondary"
+                    type="button"
+                    data-edit-voting-from-tutorial="${tutorial.voting_id}"
+                  >
+                    Edit Voting
+                  </button>
+                `
+                : `
+                  <button
+                    class="btn btn-secondary"
+                    type="button"
+                    data-edit-tutorial="${tutorial.id}"
+                  >
+                    Edit
+                  </button>
 
-        <button
-          class="btn btn-secondary"
-          type="button"
-          data-delete-tutorial="${tutorial.id}"
-        >
-          Delete
-        </button>
-      `
-  }
+                  <button
+                    class="btn btn-secondary"
+                    type="button"
+                    data-delete-tutorial="${tutorial.id}"
+                  >
+                    Delete
+                  </button>
+                `
+            }
 
-</div>
+          </div>
 
         </article>
       `;
@@ -12557,12 +14949,14 @@ adminTutorialList.innerHTML = combinedTutorials
     .join('');
 
 
-    // ================================
+  // ================================
   // EDIT TUTORIAL
   // ================================
 
   const editTutorialButtons =
-    document.querySelectorAll('[data-edit-tutorial]');
+    document.querySelectorAll(
+      '[data-edit-tutorial]'
+    );
 
   editTutorialButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -12570,7 +14964,10 @@ adminTutorialList.innerHTML = combinedTutorials
         Number(button.dataset.editTutorial);
 
       const tutorial =
-        tutorials.find((item) => item.id === tutorialId);
+        tutorials.find(
+          (item) =>
+            item.id === tutorialId
+        );
 
       if (!tutorial) {
         return;
@@ -12727,15 +15124,22 @@ adminTutorialList.innerHTML = combinedTutorials
       `;
 
       const cancelEditTutorial =
-        document.querySelector('#cancelEditTutorial');
+        document.querySelector(
+          '#cancelEditTutorial'
+        );
 
-      cancelEditTutorial.addEventListener('click', () => {
-        loadTutorialAdminSection();
-      });
+      cancelEditTutorial.addEventListener(
+        'click',
+        () => {
+          loadTutorialAdminSection();
+        }
+      );
 
 
       const adminEditTutorialForm =
-        document.querySelector('#adminEditTutorialForm');
+        document.querySelector(
+          '#adminEditTutorialForm'
+        );
 
       adminEditTutorialForm.addEventListener(
         'submit',
@@ -12743,7 +15147,9 @@ adminTutorialList.innerHTML = combinedTutorials
           event.preventDefault();
 
           const formData =
-            new FormData(adminEditTutorialForm);
+            new FormData(
+              adminEditTutorialForm
+            );
 
           const tutorialData = {
             title:

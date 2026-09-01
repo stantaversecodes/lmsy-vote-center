@@ -27,6 +27,9 @@ export const translations = {
       description:
         'Find current voting opportunities for Lookmhee, Sonya and LMSY.',
       all: 'All',
+      priority: 'Priority',
+      priorityDescription:
+        'These are the most important votes right now — focus on these first.',
       ceremony: 'Awards & Ceremonies',
       poll: 'Poll',
       advertising: 'Advertising',
@@ -150,6 +153,9 @@ export const translations = {
       description:
         'Encuentra las votaciones actuales para Lookmhee, Sonya y LMSY.',
       all: 'Todas',
+      priority: 'Prioridad',
+      priorityDescription:
+        'Estas son las votaciones más importantes en este momento — enfócate primero en estas.',
       ceremony: 'Premios y Ceremonias',
       poll: 'Encuesta',
       advertising: 'Publicidad',
@@ -278,6 +284,9 @@ export const translations = {
       description:
         'ค้นหาการโหวตปัจจุบันสำหรับ Lookmhee, Sonya และ LMSY',
       all: 'ทั้งหมด',
+      priority: 'สำคัญ',
+      priorityDescription:
+        'นี่คือการโหวตที่สำคัญที่สุดในตอนนี้ — ให้ความสำคัญกับรายการเหล่านี้ก่อน',
       ceremony:
         'รางวัลและงานประกาศรางวัล',
       poll: 'โพล',
@@ -411,6 +420,9 @@ export const translations = {
       description:
         '查看 Lookmhee、Sonya 和 LMSY 当前的投票活动。',
       all: '全部',
+      priority: '优先',
+      priorityDescription:
+        '这些是目前最重要的投票——请优先关注这些投票。',
       ceremony: '奖项与典礼',
       poll: '投票',
       advertising: '广告',
@@ -543,6 +555,9 @@ export const translations = {
       description:
         'Encontre as votações atuais para Lookmhee, Sonya e LMSY.',
       all: 'Todas',
+      priority: 'Prioridade',
+      priorityDescription:
+        'Estas são as votações mais importantes no momento — concentre-se nelas primeiro.',
       ceremony:
         'Prêmios e Cerimônias',
       poll: 'Enquete',
@@ -683,6 +698,9 @@ export const translations = {
       description:
         'Lookmhee, Sonya 및 LMSY의 현재 투표를 확인하세요.',
       all: '전체',
+      priority: '우선순위',
+      priorityDescription:
+        '지금 가장 중요한 투표입니다 — 이 투표들에 먼저 집중해 주세요.',
       ceremony:
         '시상식 및 어워드',
       poll: '투표',
