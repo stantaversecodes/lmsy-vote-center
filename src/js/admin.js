@@ -914,7 +914,6 @@ export async function getFooterSettings() {
   return data;
 }
 
-
 export async function updateFooterSettings(
   footerId,
   footerData
@@ -947,4 +946,380 @@ export async function updateFooterSettings(
 
 
   return data;
+}
+
+// ================================
+// VOTING SETTINGS
+// ================================
+
+export async function getVotingSettings() {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_voting_settings')
+      .select('*')
+      .order('id', {
+        ascending: true,
+      })
+      .limit(1)
+      .maybeSingle();
+
+
+  if (error) {
+    console.error(
+      'Unable to load voting settings:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data;
+}
+
+
+export async function updateVotingSettings(
+  votingSettingsId,
+  votingSettingsData
+) {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_voting_settings')
+      .update({
+        ...votingSettingsData,
+
+        updated_at:
+          new Date().toISOString(),
+      })
+      .eq(
+        'id',
+        votingSettingsId
+      )
+      .select()
+      .single();
+
+
+  if (error) {
+    console.error(
+      'Unable to update voting settings:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data;
+}
+
+// ================================
+// DYNAMIC VOTING TABS
+// ================================
+
+export async function getVotingTabs() {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_voting_tabs')
+      .select('*')
+      .order('sort_order', {
+        ascending: true,
+      })
+      .order('id', {
+        ascending: true,
+      });
+
+
+  if (error) {
+    console.error(
+      'Unable to load voting tabs:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data ?? [];
+}
+
+
+export async function getActiveVotingTabs() {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_voting_tabs')
+      .select('*')
+      .eq(
+        'active',
+        true
+      )
+      .order('sort_order', {
+        ascending: true,
+      })
+      .order('id', {
+        ascending: true,
+      });
+
+
+  if (error) {
+    console.error(
+      'Unable to load active voting tabs:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data ?? [];
+}
+
+
+export async function createVotingTab(
+  votingTabData
+) {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_voting_tabs')
+      .insert({
+        ...votingTabData,
+
+        created_at:
+          new Date().toISOString(),
+
+        updated_at:
+          new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+
+  if (error) {
+    console.error(
+      'Unable to create voting tab:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data;
+}
+
+
+export async function updateVotingTab(
+  votingTabId,
+  votingTabData
+) {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from('lmsy_voting_tabs')
+      .update({
+        ...votingTabData,
+
+        updated_at:
+          new Date().toISOString(),
+      })
+      .eq(
+        'id',
+        votingTabId
+      )
+      .select()
+      .single();
+
+
+  if (error) {
+    console.error(
+      'Unable to update voting tab:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data;
+}
+
+
+export async function deleteVotingTab(
+  votingTabId
+) {
+  const {
+    error,
+  } =
+    await supabase
+      .from('lmsy_voting_tabs')
+      .delete()
+      .eq(
+        'id',
+        votingTabId
+      );
+
+
+  if (error) {
+    console.error(
+      'Unable to delete voting tab:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return true;
+}
+
+
+// ================================
+// VOTING TAB ASSIGNMENTS
+// ================================
+
+export async function getVotingTabAssignments() {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from(
+        'lmsy_voting_tab_assignments'
+      )
+      .select('*');
+
+
+  if (error) {
+    console.error(
+      'Unable to load voting tab assignments:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data ?? [];
+}
+
+
+export async function getVotingTabAssignmentsByVotingId(
+  votingId
+) {
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from(
+        'lmsy_voting_tab_assignments'
+      )
+      .select('*')
+      .eq(
+        'voting_id',
+        votingId
+      );
+
+
+  if (error) {
+    console.error(
+      'Unable to load voting tab assignments for voting:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data ?? [];
+}
+
+
+export async function replaceVotingTabAssignments(
+  votingId,
+  tabIds = []
+) {
+  const {
+    error: deleteError,
+  } =
+    await supabase
+      .from(
+        'lmsy_voting_tab_assignments'
+      )
+      .delete()
+      .eq(
+        'voting_id',
+        votingId
+      );
+
+
+  if (deleteError) {
+    console.error(
+      'Unable to clear voting tab assignments:',
+      deleteError
+    );
+
+    throw deleteError;
+  }
+
+
+  if (
+    !Array.isArray(tabIds) ||
+    tabIds.length === 0
+  ) {
+    return [];
+  }
+
+
+  const assignments =
+    tabIds.map(
+      (tabId) => ({
+        voting_id:
+          votingId,
+
+        tab_id:
+          Number(tabId),
+      })
+    );
+
+
+  const {
+    data,
+    error,
+  } =
+    await supabase
+      .from(
+        'lmsy_voting_tab_assignments'
+      )
+      .insert(assignments)
+      .select();
+
+
+  if (error) {
+    console.error(
+      'Unable to save voting tab assignments:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return data ?? [];
 }
