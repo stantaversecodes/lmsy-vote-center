@@ -2200,6 +2200,18 @@ let publicVotingTranslations = {};
 let currentPublicVoteFilter =
   'all';
 
+const VOTE_COUNTDOWN_DAY =
+  86400000;
+
+const VOTE_COUNTDOWN_HOUR =
+  3600000;
+
+const VOTE_COUNTDOWN_MINUTE =
+  60000;
+
+let voteCountdownNow =
+  new Date();
+
 
 // ================================
 // GET TRANSLATED VOTING FIELD
@@ -2274,6 +2286,33 @@ function getVotingText(key) {
       frequency:
         'Frequency',
 
+      day:
+        'day',
+
+      days:
+        'days',
+
+      hour:
+        'hour',
+
+      hours:
+        'hours',
+
+      minute:
+        'minute',
+
+      minutes:
+        'minutes',
+
+      closesIn:
+        'Closes in',
+
+      opensIn:
+        'Opens in',
+
+      endedLabel:
+        'Ended',
+
       voteNow:
         'Vote Now',
 
@@ -2323,6 +2362,33 @@ function getVotingText(key) {
 
       frequency:
         'Frecuencia',
+
+      day:
+        'día',
+
+      days:
+        'días',
+
+      hour:
+        'hora',
+
+      hours:
+        'horas',
+
+      minute:
+        'minuto',
+
+      minutes:
+        'minutos',
+
+      closesIn:
+        'Cierra en',
+
+      opensIn:
+        'Abre en',
+
+      endedLabel:
+        'Finalizada',
 
       voteNow:
         'Votar Ahora',
@@ -2374,6 +2440,33 @@ function getVotingText(key) {
       frequency:
         'ความถี่',
 
+      day:
+        'วัน',
+
+      days:
+        'วัน',
+
+      hour:
+        'ชั่วโมง',
+
+      hours:
+        'ชั่วโมง',
+
+      minute:
+        'นาที',
+
+      minutes:
+        'นาที',
+
+      closesIn:
+        'ปิดใน',
+
+      opensIn:
+        'เริ่มใน',
+
+      endedLabel:
+        'ปิดแล้ว',
+
       voteNow:
         'โหวตตอนนี้',
 
@@ -2423,6 +2516,33 @@ function getVotingText(key) {
 
       frequency:
         '频率',
+
+      day:
+        '天',
+
+      days:
+        '天',
+
+      hour:
+        '小时',
+
+      hours:
+        '小时',
+
+      minute:
+        '分钟',
+
+      minutes:
+        '分钟',
+
+      closesIn:
+        '距截止',
+
+      opensIn:
+        '距开始',
+
+      endedLabel:
+        '已结束',
 
       voteNow:
         '立即投票',
@@ -2474,6 +2594,33 @@ function getVotingText(key) {
       frequency:
         'Frequência',
 
+      day:
+        'dia',
+
+      days:
+        'dias',
+
+      hour:
+        'hora',
+
+      hours:
+        'horas',
+
+      minute:
+        'minuto',
+
+      minutes:
+        'minutos',
+
+      closesIn:
+        'Fecha em',
+
+      opensIn:
+        'Abre em',
+
+      endedLabel:
+        'Encerrada',
+
       voteNow:
         'Votar Agora',
 
@@ -2523,6 +2670,33 @@ function getVotingText(key) {
 
       frequency:
         '투표 주기',
+
+      day:
+        '일',
+
+      days:
+        '일',
+
+      hour:
+        '시간',
+
+      hours:
+        '시간',
+
+      minute:
+        '분',
+
+      minutes:
+        '분',
+
+      closesIn:
+        '마감까지',
+
+      opensIn:
+        '시작까지',
+
+      endedLabel:
+        '종료됨',
 
       voteNow:
         '지금 투표하기',
@@ -2674,6 +2848,314 @@ function getAccentClass(
   }
 
   return 'vote-card--lmsy';
+}
+
+
+// ================================
+// ARTIST CATEGORY PILLS
+// ================================
+
+function buildVoteCategoryPills(
+  accent
+) {
+  const labels = {
+    lookmhee: 'Lookmhee',
+    sonya: 'Sonya',
+    lmsy: 'LMSY',
+  };
+
+  const modifier =
+    labels[accent]
+      ? accent
+      : 'lmsy';
+
+  return `
+    <div class="vote-card__categories">
+      <span
+        class="
+          vote-card__category-pill
+          vote-card__category-pill--${modifier}
+        "
+      >
+        ${
+          labels[accent] ||
+          'LMSY'
+        }
+      </span>
+    </div>
+  `;
+}
+
+
+// ================================
+// COUNTDOWN RING
+// ================================
+
+function getVoteStatus(
+  platform
+) {
+  const startDate =
+    platform.start_date
+      ? new Date(
+          platform.start_date
+        )
+      : null;
+
+  const deadlineDate =
+    platform.deadline
+      ? new Date(
+          platform.deadline
+        )
+      : null;
+
+  if (
+    deadlineDate &&
+    voteCountdownNow >
+      deadlineDate
+  ) {
+    return 'ended';
+  }
+
+  if (
+    startDate &&
+    voteCountdownNow <
+      startDate
+  ) {
+    return 'upcoming';
+  }
+
+  return 'active';
+}
+
+
+function getVoteCountdownParts(
+  ms
+) {
+  if (
+    ms >=
+    VOTE_COUNTDOWN_DAY
+  ) {
+    const value = Math.ceil(
+      ms / VOTE_COUNTDOWN_DAY
+    );
+
+    return {
+      value,
+      unit: getVotingText(
+        value === 1
+          ? 'day'
+          : 'days'
+      ),
+    };
+  }
+
+  if (
+    ms >=
+    VOTE_COUNTDOWN_HOUR
+  ) {
+    const value = Math.ceil(
+      ms / VOTE_COUNTDOWN_HOUR
+    );
+
+    return {
+      value,
+      unit: getVotingText(
+        value === 1
+          ? 'hour'
+          : 'hours'
+      ),
+    };
+  }
+
+  const value = Math.max(
+    1,
+    Math.ceil(
+      ms /
+        VOTE_COUNTDOWN_MINUTE
+    )
+  );
+
+  return {
+    value,
+    unit: getVotingText(
+      value === 1
+        ? 'minute'
+        : 'minutes'
+    ),
+  };
+}
+
+
+function getVoteRingColor(
+  accent
+) {
+  const colors = {
+    sonya:
+      'var(--color-sonya)',
+
+    lookmhee:
+      'var(--color-lookmhee)',
+
+    lmsy:
+      '#6C54B0',
+  };
+
+  return (
+    colors[accent] ||
+    'var(--color-sonya)'
+  );
+}
+
+
+function buildVoteCountdownRing(
+  platform
+) {
+  const startDate =
+    platform.start_date
+      ? new Date(
+          platform.start_date
+        )
+      : null;
+
+  const deadlineDate =
+    platform.deadline
+      ? new Date(
+          platform.deadline
+        )
+      : null;
+
+  if (!deadlineDate) {
+    return '';
+  }
+
+  const status =
+    getVoteStatus(platform);
+
+  const ringColor =
+    getVoteRingColor(
+      platform.accent
+    );
+
+  let progress = 0;
+  let value = null;
+  let unit = '';
+  let statusLabel =
+    getVotingText(
+      'endedLabel'
+    );
+  let statusColor =
+    'var(--color-text-light)';
+
+  if (status === 'active') {
+    const totalMs =
+      startDate
+        ? deadlineDate -
+          startDate
+        : null;
+
+    progress = totalMs
+      ? Math.min(
+          1,
+          Math.max(
+            0,
+            (voteCountdownNow -
+              startDate) /
+              totalMs
+          )
+        )
+      : 0.5;
+
+    const parts =
+      getVoteCountdownParts(
+        deadlineDate -
+          voteCountdownNow
+      );
+
+    value = parts.value;
+    unit = parts.unit;
+    statusLabel =
+      getVotingText(
+        'closesIn'
+      );
+    statusColor = ringColor;
+
+  } else if (
+    status === 'upcoming'
+  ) {
+    progress = 0;
+
+    const parts =
+      getVoteCountdownParts(
+        startDate -
+          voteCountdownNow
+      );
+
+    value = parts.value;
+    unit = parts.unit;
+    statusLabel =
+      getVotingText(
+        'opensIn'
+      );
+    statusColor = ringColor;
+
+  } else {
+    progress = 1;
+  }
+
+  const percent = Math.round(
+    progress * 100
+  );
+
+  const ringDisplayColor =
+    status === 'ended'
+      ? 'var(--color-text-light)'
+      : ringColor;
+
+  return `
+    <div
+      class="
+        vote-card__countdown
+      "
+    >
+      <div
+        class="
+          vote-card__ring
+          ${
+            status === 'ended'
+              ? 'vote-card__ring--ended'
+              : ''
+          }
+        "
+        style="
+          --vote-card-ring-progress: ${percent}%;
+          --vote-card-ring-color: ${ringDisplayColor};
+        "
+      >
+        <div
+          class="
+            vote-card__ring-inner
+          "
+        >
+          ${
+            value !== null
+              ? `
+                <span class="vote-card__ring-value">${value}</span>
+                <span class="vote-card__ring-unit">${unit}</span>
+              `
+              : `<span class="vote-card__ring-ended-icon">&#10003;</span>`
+          }
+        </div>
+      </div>
+      <span
+        class="
+          vote-card__ring-status
+        "
+        style="color: ${statusColor};"
+      >
+        ${statusLabel}
+      </span>
+    </div>
+  `;
 }
 
 
@@ -2834,6 +3316,16 @@ function renderPublicVotingPlatforms(
     'frequency'
   );
 
+        const countdownRing =
+          buildVoteCountdownRing(
+            platform
+          );
+
+        const categoryPills =
+          buildVoteCategoryPills(
+            platform.accent
+          );
+
         return `
           <article
             class="
@@ -2856,16 +3348,6 @@ function renderPublicVotingPlatforms(
 
               <span
                 class="
-                  vote-card__category
-                "
-              >
-                ${getVoteTypeLabel(
-                  platform.vote_type
-                )}
-              </span>
-
-              <span
-                class="
                   vote-card__priority
                   ${getPriorityClass(
                     platform.priority
@@ -2882,25 +3364,53 @@ function renderPublicVotingPlatforms(
 
             <div
               class="
-                vote-card__content
+                vote-card__body
               "
             >
 
-              <h3
-                class="
-                  vote-card__title
-                "
-              >
-                ${platform.event}
-              </h3>
+              ${countdownRing}
 
-              <p
+              <div
                 class="
-                  vote-card__platform
+                  vote-card__content
                 "
               >
-                ${platform.platform}
-              </p>
+
+                <div
+                  class="
+                    vote-card__title-row
+                  "
+                >
+
+                  <h3
+                    class="
+                      vote-card__title
+                    "
+                  >
+                    ${platform.event}
+                  </h3>
+
+                  <span
+                    class="
+                      vote-card__category
+                    "
+                  >
+                    ${getVoteTypeLabel(
+                      platform.vote_type
+                    )}
+                  </span>
+
+                </div>
+
+                <p
+                  class="
+                    vote-card__platform
+                  "
+                >
+                  ${platform.platform}
+                </p>
+
+                ${categoryPills}
 
 
               <div
@@ -2944,6 +3454,8 @@ function renderPublicVotingPlatforms(
                     `
                     : ''
                 }
+
+                </div>
 
               </div>
 
@@ -3126,6 +3638,15 @@ voteFilters.forEach(
 updatePublicVotingStaticText();
 
 loadPublicVotingPlatforms();
+
+setInterval(() => {
+  voteCountdownNow =
+    new Date();
+
+  renderPublicVotingPlatforms(
+    currentPublicVoteFilter
+  );
+}, VOTE_COUNTDOWN_MINUTE);
 // ================================
 // PUBLIC TUTORIALS
 // ================================
@@ -6033,36 +6554,10 @@ function applySiteContent(content) {
 async function loadPublicSiteContent() {
   try {
 
-    // ================================
-    // PREVENT HERO BUTTON FLASH
-    // ================================
+    restoreBaseSiteContent();
 
-    const heroPrimaryButton =
-      document.querySelector(
-        '#heroPrimaryButton'
-      );
+    applyTranslations();
 
-    const heroSecondaryButton =
-      document.querySelector(
-        '#heroSecondaryButton'
-      );
-
-
-    if (
-      heroPrimaryButton &&
-      heroSecondaryButton
-    ) {
-      heroPrimaryButton.style.visibility =
-        'hidden';
-
-      heroSecondaryButton.style.visibility =
-        'hidden';
-    }
-
-
-    // ================================
-    // LOAD CONTENT FIRST
-    // ================================
 
     const contentItems =
       await getActiveContent();
@@ -6128,16 +6623,6 @@ async function loadPublicSiteContent() {
       );
 
 
-    // ================================
-    // APPLY CONTENT ONLY AFTER
-    // EVERYTHING IS READY
-    // ================================
-
-    restoreBaseSiteContent();
-
-    applyTranslations();
-
-
     mainContentItems.forEach(
       (content) => {
         applySiteContent(
@@ -6147,47 +6632,7 @@ async function loadPublicSiteContent() {
     );
 
 
-    // ================================
-    // RESTORE BUTTON VISIBILITY
-    // ================================
-
-    if (heroPrimaryButton) {
-      heroPrimaryButton.style.visibility =
-        '';
-    }
-
-
-    if (heroSecondaryButton) {
-      heroSecondaryButton.style.visibility =
-        '';
-    }
-
-
   } catch (error) {
-
-    const heroPrimaryButton =
-      document.querySelector(
-        '#heroPrimaryButton'
-      );
-
-    const heroSecondaryButton =
-      document.querySelector(
-        '#heroSecondaryButton'
-      );
-
-
-    if (heroPrimaryButton) {
-      heroPrimaryButton.style.visibility =
-        '';
-    }
-
-
-    if (heroSecondaryButton) {
-      heroSecondaryButton.style.visibility =
-        '';
-    }
-
-
     console.error(
       'Unable to load public site content:',
       error
