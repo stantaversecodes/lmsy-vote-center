@@ -667,9 +667,7 @@
   display: flex;
   flex-direction: column;
 
-  gap: 1.4rem;
-
-  padding: 1.4rem;
+  padding: 22px 24px;
 
   background: var(--color-surface);
 
@@ -679,16 +677,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.vote-card__top {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  gap: 0.75rem;
-}
-
-.vote-card__category,
-.vote-card__priority {
+.vote-card__category {
   display: inline-flex;
   align-items: center;
 
@@ -702,23 +691,44 @@
   font-weight: 700;
 
   white-space: nowrap;
-}
 
-.vote-card__category {
   background: var(--color-sonya-soft);
   color: var(--color-sonya-deep);
 }
 
-.vote-card__priority {
-  background: var(--color-lookmhee-soft);
-  color: var(--color-lookmhee-deep);
+.vote-card__title-row .vote-card__category {
+  position: relative;
+  top: 2px;
 }
 
 .vote-card__body {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
 
-  gap: 1rem;
+  gap: 20px;
+}
+
+.vote-card__priority {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  flex-shrink: 0;
+
+  min-height: 30px;
+
+  margin-left: auto;
+
+  padding: 0.35rem 0.7rem;
+
+  border-radius: var(--radius-pill);
+
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  background: var(--color-lookmhee-soft);
+  color: var(--color-lookmhee-deep);
 }
 
 
@@ -732,14 +742,16 @@
   align-items: center;
   flex-shrink: 0;
 
-  gap: 0.2rem;
+  width: 88px;
 
-  padding-top: 0.15rem;
+  gap: 8px;
 }
 
 .vote-card__ring {
   --vote-card-ring-progress: 0%;
   --vote-card-ring-color: var(--color-sonya);
+
+  position: relative;
 
   display: flex;
   align-items: center;
@@ -747,9 +759,9 @@
 
   flex-shrink: 0;
 
-  width: 44px;
-  height: 44px;
-  padding: 4px;
+  width: 88px;
+  height: 88px;
+  padding: 6px;
 
   border-radius: 50%;
 
@@ -757,6 +769,8 @@
     var(--vote-card-ring-color) var(--vote-card-ring-progress),
     var(--color-border) 0
   );
+
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.04);
 
   transition: background var(--transition-base);
 }
@@ -768,6 +782,9 @@
 }
 
 .vote-card__ring-inner {
+  position: relative;
+  z-index: 1;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -779,38 +796,40 @@
   border-radius: 50%;
 
   background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.08);
 
   line-height: 1;
 }
 
 .vote-card__ring-value {
-  font-size: 0.68rem;
+  font-size: 1.1rem;
   font-weight: 700;
+  line-height: 1.1;
 
   color: var(--color-text);
 }
 
 .vote-card__ring-unit {
-  margin-top: 1px;
+  margin-top: 2px;
 
-  font-size: 0.47rem;
+  font-size: 0.52rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 
   color: var(--color-text-light);
 }
 
 .vote-card__ring-ended-icon {
-  font-size: 0.85rem;
+  font-size: 1.5rem;
 
   color: var(--color-text-light);
 }
 
 .vote-card__ring-status {
-  font-size: 0.58rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
@@ -826,9 +845,9 @@
   align-items: center;
   flex-wrap: wrap;
 
-  gap: 0.5rem;
+  gap: 9px;
 
-  margin-bottom: 0.45rem;
+  margin-bottom: 5px;
 }
 
 .vote-card__title {
@@ -841,7 +860,7 @@
 }
 
 .vote-card__platform {
-  margin-bottom: 0.9rem;
+  margin: 0 0 10px;
 
   color: var(--color-text-soft);
 
@@ -850,14 +869,40 @@
 
 .vote-card__details {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
 
-  gap: 0.5rem 1rem;
+  gap: 6px;
+
+  margin-bottom: 14px;
 
   color: var(--color-text-light);
 
   font-size: var(--font-size-sm);
+}
+
+.vote-card__detail {
+  display: block;
+}
+
+.vote-card__meta-dates {
+  font-weight: 300;
+  color: var(--color-text-light);
+}
+
+.vote-card__meta-label {
+  color: var(--color-text-soft);
+  font-weight: 600;
+}
+
+.vote-card__meta-timezone {
+  display: inline;
+  margin-left: 6px;
+
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-light);
 }
 
 
@@ -869,21 +914,21 @@
   display: flex;
   flex-wrap: wrap;
 
-  gap: 0.4rem;
+  gap: 6px;
 
-  margin-bottom: 1.1rem;
+  margin-bottom: 12px;
 }
 
 .vote-card__category-pill {
   display: inline-flex;
   align-items: center;
 
-  padding: 0.3rem 0.7rem;
+  padding: 4px 11px;
 
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
 
-  font-size: var(--font-size-xs);
+  font-size: 11.5px;
   font-weight: 700;
 
   white-space: nowrap;
@@ -2495,26 +2540,52 @@
     width: 100%;
     min-width: 0;
 
-    gap: 1.15rem;
-
     padding: 1.25rem;
   }
 
-  .vote-card__top {
-    flex-wrap: wrap;
-    justify-content: flex-start;
+  .vote-card__body {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "ring priority"
+      "content content";
+    align-items: start;
+
+    row-gap: 1rem;
+    column-gap: 0.6rem;
   }
 
-  .vote-card__body {
-    align-items: flex-start;
+  .vote-card__countdown {
+    grid-area: ring;
+
+    flex-direction: row;
+    align-self: center;
+
+    width: auto;
+
+    gap: 0.6rem;
+  }
+
+  .vote-card__ring-status {
+    text-align: left;
+  }
+
+  .vote-card__priority {
+    grid-area: priority;
+    justify-self: end;
+    align-self: center;
+
+    margin-left: 0;
   }
 
   .vote-card__ring {
-    width: 40px;
-    height: 40px;
+    width: 72px;
+    height: 72px;
   }
 
   .vote-card__content {
+    grid-area: content;
+
     width: 100%;
     min-width: 0;
   }

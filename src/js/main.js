@@ -2252,7 +2252,6 @@ let publicVotingTabAssignments = [];
 
 let currentPublicVoteFilter = null;
 
-
 const VOTE_COUNTDOWN_DAY =
   86400000;
 
@@ -2261,6 +2260,9 @@ const VOTE_COUNTDOWN_HOUR =
 
 const VOTE_COUNTDOWN_MINUTE =
   60000;
+
+const VOTE_COUNTDOWN_SECOND =
+  1000;
 
 let voteCountdownNow =
   new Date();
@@ -2411,9 +2413,6 @@ function getVotingText(key) {
       closesIn:
         'Closes in',
 
-      opensIn:
-        'Opens in',
-
       endedLabel:
         'Ended',
 
@@ -2496,9 +2495,6 @@ function getVotingText(key) {
 
       closesIn:
         'Cierra en',
-
-      opensIn:
-        'Abre en',
 
       endedLabel:
         'Finalizada',
@@ -2583,9 +2579,6 @@ function getVotingText(key) {
       closesIn:
         'ปิดใน',
 
-      opensIn:
-        'เริ่มใน',
-
       endedLabel:
         'ปิดแล้ว',
 
@@ -2668,9 +2661,6 @@ function getVotingText(key) {
 
       closesIn:
         '距截止',
-
-      opensIn:
-        '距开始',
 
       endedLabel:
         '已结束',
@@ -2755,9 +2745,6 @@ function getVotingText(key) {
       closesIn:
         'Fecha em',
 
-      opensIn:
-        'Abre em',
-
       endedLabel:
         'Encerrada',
 
@@ -2840,9 +2827,6 @@ function getVotingText(key) {
 
       closesIn:
         '마감까지',
-
-      opensIn:
-        '시작까지',
 
       endedLabel:
         '종료됨',
@@ -3093,16 +3077,6 @@ function getVoteStatus(
     return 'ended';
   }
 
-
-  if (
-    startDate &&
-    voteCountdownNow <
-      startDate
-  ) {
-    return 'upcoming';
-  }
-
-
   return 'active';
 }
 
@@ -3192,7 +3166,7 @@ function getVoteRingColor(
       'var(--color-lookmhee)',
 
     lmsy:
-      '#6C54B0',
+      '#B9CFC7',
   };
 
 
@@ -3274,8 +3248,8 @@ function buildVoteCountdownRing(
             Math.max(
               0,
               (
-                voteCountdownNow -
-                startDate
+                deadlineDate -
+                voteCountdownNow
               ) /
                 totalMs
             )
@@ -3305,36 +3279,7 @@ function buildVoteCountdownRing(
       ringColor;
 
 
-  } else if (
-    status ===
-    'upcoming'
-  ) {
-    progress = 0;
-
-
-    const parts =
-      getVoteCountdownParts(
-        startDate -
-        voteCountdownNow
-      );
-
-
-    value =
-      parts.value;
-
-    unit =
-      parts.unit;
-
-    statusLabel =
-      getVotingText(
-        'opensIn'
-      );
-
-    statusColor =
-      ringColor;
-
-
-  } else {
+  }  else {
     progress = 1;
   }
 
@@ -3437,6 +3382,17 @@ function buildVoteCountdownRing(
 // VOTING DATES
 // ================================
 
+function hasExplicitVoteTime(
+  dateValue
+) {
+  return (
+    typeof dateValue ===
+      'string' &&
+    dateValue.length > 10
+  );
+}
+
+
 function formatVoteDate(
   dateValue
 ) {
@@ -3460,16 +3416,67 @@ function formatVoteDate(
   }
 
 
+  const options = {
+    month:
+      'short',
+
+    day:
+      'numeric',
+
+    year:
+      'numeric',
+  };
+
+
+  if (
+    hasExplicitVoteTime(
+      dateValue
+    )
+  ) {
+    options.hour =
+      'numeric';
+
+    options.minute =
+      '2-digit';
+  }
+
+
   return new Intl.DateTimeFormat(
     getVotingLocale(),
-    {
-      month:
-        'short',
-
-      day:
-        'numeric',
-    }
+    options
   ).format(date);
+}
+
+
+function formatVoteWindow(
+  platform
+) {
+  const startDate =
+    formatVoteDate(
+      platform.start_date
+    );
+
+  const endDate =
+    formatVoteDate(
+      platform.deadline
+    );
+
+  if (!startDate || !endDate) {
+    return '';
+  }
+
+  return `
+    <span class="vote-card__meta-label">${getVotingText(
+      'starts'
+    )}:</span>
+    <span class="vote-card__meta-dates">${startDate}</span>
+    <span class="vote-card__meta-separator">&nbsp;</span>
+    <span class="vote-card__meta-label">${getVotingText(
+      'deadline'
+    )}:</span>
+    <span class="vote-card__meta-dates">${endDate}</span>
+    <span class="vote-card__meta-timezone">(Local time)</span>
+  `;
 }
 
 
@@ -4041,15 +4048,9 @@ function renderPublicVotingPlatforms(
     filteredPlatforms
       .map(
         (platform) => {
-          const startDate =
-            formatVoteDate(
-              platform.start_date
-            );
-
-
-          const deadline =
-            formatVoteDate(
-              platform.deadline
+          const votingWindow =
+            formatVoteWindow(
+              platform
             );
 
 
@@ -4093,28 +4094,6 @@ function renderPublicVotingPlatforms(
                 platform.priority
               }"
             >
-
-              <div
-                class="
-                  vote-card__top
-                "
-              >
-
-                <span
-                  class="
-                    vote-card__priority
-                    ${getPriorityClass(
-                      platform.priority
-                    )}
-                  "
-                >
-                  ${getPriorityLabel(
-                    platform.priority
-                  )}
-                </span>
-
-              </div>
-
 
               <div
                 class="
@@ -4176,26 +4155,11 @@ function renderPublicVotingPlatforms(
                   >
 
                     ${
-                      startDate
+                      votingWindow
                         ? `
-                          <span>
-                            ${getVotingText(
-                              'starts'
-                            )}: ${startDate}
-                          </span>
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      deadline
-                        ? `
-                          <span>
-                            ${getVotingText(
-                              'deadline'
-                            )}: ${deadline}
-                          </span>
+                          <div class="vote-card__detail">
+                            ${votingWindow}
+                          </div>
                         `
                         : ''
                     }
@@ -4204,11 +4168,11 @@ function renderPublicVotingPlatforms(
                     ${
                       translatedFrequency
                         ? `
-                          <span>
+                          <div class="vote-card__detail">
                             ${getVotingText(
                               'frequency'
                             )}: ${translatedFrequency}
-                          </span>
+                          </div>
                         `
                         : ''
                     }
@@ -4260,6 +4224,20 @@ function renderPublicVotingPlatforms(
                   </div>
 
                 </div>
+
+
+                <span
+                  class="
+                    vote-card__priority
+                    ${getPriorityClass(
+                      platform.priority
+                    )}
+                  "
+                >
+                  ${getPriorityLabel(
+                    platform.priority
+                  )}
+                </span>
 
               </div>
 
@@ -4339,22 +4317,21 @@ async function loadPublicVotingPlatforms() {
       votingTabs,
       votingTabTranslationRows,
       votingTabAssignments,
-    ] =
-      await Promise.all([
-        getActiveVotingPlatforms(),
+    ] = await Promise.all([
+      getActiveVotingPlatforms(),
 
-        getTranslationsByType(
-          'voting'
-        ),
+      getTranslationsByType(
+        'voting'
+      ),
 
-        getActiveVotingTabs(),
+      getActiveVotingTabs(),
 
-        getTranslationsByType(
-          'voting_tab'
-        ),
+      getTranslationsByType(
+        'voting_tab'
+      ),
 
-        getVotingTabAssignments(),
-      ]);
+      getVotingTabAssignments(),
+    ]);
 
 
     publicVotingPlatforms =
@@ -4506,7 +4483,7 @@ setInterval(
     );
 
   },
-  VOTE_COUNTDOWN_MINUTE
+  VOTE_COUNTDOWN_SECOND
 );
 
 // ================================
