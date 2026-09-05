@@ -765,21 +765,79 @@
 
   border-radius: 50%;
 
-  background: conic-gradient(
-    var(--vote-card-ring-color) var(--vote-card-ring-progress),
-    var(--color-border) 0
+  background: var(--color-border);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(29, 29, 31, 0.04),
+    0 6px 18px rgba(79, 169, 227, 0.05);
+
+  transition:
+    background var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+
+/* PASTEL LMSY COUNTDOWN GRADIENT */
+
+.vote-card__ring::before {
+  content: '';
+
+  position: absolute;
+  inset: 0;
+
+  border-radius: 50%;
+
+  background:
+  conic-gradient(
+    from 220deg,
+    #F1D77D 0%,
+    #F3E2A5 26%,
+    #DDE8DF 48%,
+    #C7E1F0 70%,
+    #9FCEEA 100%
   );
 
-  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.04);
+  -webkit-mask:
+    conic-gradient(
+      #000 0 var(--vote-card-ring-progress),
+      transparent var(--vote-card-ring-progress) 100%
+    );
 
-  transition: background var(--transition-base);
+  mask:
+    conic-gradient(
+      #000 0 var(--vote-card-ring-progress),
+      transparent var(--vote-card-ring-progress) 100%
+    );
+
+  pointer-events: none;
 }
+
+/* LAST 24 HOURS — SOFT URGENT RED */
+
+.vote-card__ring--urgent::before {
+  background:
+    conic-gradient(
+      from 220deg,
+      #F7DADA 0%,
+      #F3CACA 35%,
+      #EFB8B8 70%,
+      #E8A7A7 100%
+    );
+}
+
+/* ENDED COUNTDOWN */
 
 .vote-card__ring--ended {
-  background: conic-gradient(
-    var(--color-border) 0 100%
-  );
+  background: var(--color-border);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(29, 29, 31, 0.04);
 }
+
+.vote-card__ring--ended::before {
+  display: none;
+}
+
 
 .vote-card__ring-inner {
   position: relative;
@@ -796,7 +854,9 @@
   border-radius: 50%;
 
   background: var(--color-surface);
-  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.08);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(29, 29, 31, 0.08);
 
   line-height: 1;
 }
@@ -902,6 +962,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+
   color: var(--color-text-light);
 }
 
@@ -936,39 +997,59 @@
 
 .vote-card__category-pill--sonya {
   background: var(--color-sonya-soft);
-  border-color: rgba(79, 169, 227, 0.35);
+
+  border-color:
+    rgba(79, 169, 227, 0.35);
+
   color: var(--color-sonya-deep);
 }
 
 .vote-card__category-pill--lookmhee {
   background: var(--color-lookmhee-soft);
-  border-color: rgba(227, 179, 62, 0.4);
+
+  border-color:
+    rgba(227, 179, 62, 0.4);
+
   color: var(--color-lookmhee-deep);
 }
 
 .vote-card__category-pill--lmsy {
   background: var(--gradient-lmsy-soft);
-  border-color: rgba(79, 169, 227, 0.2);
+
+  border-color:
+    rgba(79, 169, 227, 0.2);
+
   color: var(--color-text);
 }
+
+
+/* ================================
+   VOTING CARD ACTIONS
+================================= */
 
 .vote-card__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
 
-  gap: 0.7rem;
+  gap: 0.65rem;
 }
 
 .vote-card__actions .btn {
   flex: 0 0 auto;
 
-  min-width: 138px;
+  min-width: 118px;
 
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
+  padding-left: 1.1rem;
+  padding-right: 1.1rem;
 
   white-space: nowrap;
+
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 
@@ -976,51 +1057,230 @@
    VOTING CARD BUTTON VARIANTS
 ================================= */
 
-.vote-card--blue .vote-card__actions .btn-primary {
-  background: var(--color-sonya-button);
-  color: var(--color-sonya-deep);
+
+/* SONYA — PASTEL BLUE */
+
+.vote-card--blue
+.vote-card__actions
+.btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      #E4F3FC 0%,
+      #D4EBF8 100%
+    );
+
+  color: #356E91;
+
+  border-color:
+    rgba(79, 169, 227, 0.18);
+
+  box-shadow:
+    0 5px 14px rgba(79, 169, 227, 0.08);
 }
 
-.vote-card--blue .vote-card__actions .btn-primary:hover {
-  background: var(--color-sonya-button-hover);
+.vote-card--blue
+.vote-card__actions
+.btn-primary:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #DCEFFA 0%,
+      #C9E6F6 100%
+    );
+
+  border-color:
+    rgba(79, 169, 227, 0.26);
+
+  box-shadow:
+    0 7px 18px rgba(79, 169, 227, 0.12);
+
+  transform: translateY(-1px);
 }
 
-.vote-card--yellow .vote-card__actions .btn-primary {
-  background: var(--color-lookmhee-button);
-  color: var(--color-lookmhee-deep);
+
+/* LOOKMHEE — PASTEL YELLOW */
+
+.vote-card--yellow
+.vote-card__actions
+.btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      #FFF4CE 0%,
+      #F9E8AE 100%
+    );
+
+  color: #8C6B22;
+
+  border-color:
+    rgba(227, 179, 62, 0.20);
+
+  box-shadow:
+    0 5px 14px rgba(227, 179, 62, 0.08);
 }
 
-.vote-card--yellow .vote-card__actions .btn-primary:hover {
-  background: var(--color-lookmhee-button-hover);
-  color: var(--color-lookmhee-deep);
+.vote-card--yellow
+.vote-card__actions
+.btn-primary:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #FDEFC0 0%,
+      #F5E19C 100%
+    );
+
+  color: #80611E;
+
+  border-color:
+    rgba(227, 179, 62, 0.28);
+
+  box-shadow:
+    0 7px 18px rgba(227, 179, 62, 0.12);
+
+  transform: translateY(-1px);
 }
 
-.vote-card--lmsy .vote-card__actions .btn-primary {
-  background: var(--gradient-lmsy);
+
+/* LMSY — PASTEL YELLOW / BLUE */
+
+.vote-card--lmsy
+.vote-card__actions
+.btn-primary {
+  background:
+    linear-gradient(
+      110deg,
+      #FFF4D6 0%,
+      #FFF8E8 38%,
+      #EEF7F8 62%,
+      #DCEFFA 100%
+    );
+
   color: #4A4A4F;
-  border-color: transparent;
+
+  border: 1px solid rgba(79, 169, 227, 0.12);
+
+  box-shadow:
+    0 4px 12px rgba(79, 169, 227, 0.05),
+    0 4px 12px rgba(227, 179, 62, 0.04);
 }
 
-.vote-card--lmsy .vote-card__actions .btn-primary:hover {
-  filter: brightness(0.98);
-  box-shadow: var(--shadow-md);
+.vote-card--lmsy
+.vote-card__actions
+.btn-primary:hover {
+  background:
+    linear-gradient(
+      110deg,
+      #FCECC0 0%,
+      #FFF4DB 38%,
+      #E7F2F5 62%,
+      #CFE8F7 100%
+    );
+
+  border-color:
+    rgba(79, 169, 227, 0.18);
+
+  box-shadow:
+    0 6px 16px rgba(79, 169, 227, 0.08),
+    0 6px 16px rgba(227, 179, 62, 0.06);
+
+  transform: translateY(-1px);
 }
 
-.vote-card__actions .btn-secondary {
+
+/* ================================
+   TUTORIAL BUTTON
+================================= */
+
+.vote-card__actions
+.btn-secondary {
   position: relative;
   overflow: hidden;
 
-  background: var(--color-surface);
-}
+  background:
+    rgba(255, 255, 255, 0.72);
 
-.vote-card__actions .btn-secondary:hover {
-  background: var(--gradient-lmsy-soft);
+  color:
+    var(--color-text);
 
-  border-color: rgba(79, 169, 227, 0.18);
+  border-color:
+    rgba(79, 169, 227, 0.14);
 
   box-shadow:
-    0 6px 18px rgba(79, 169, 227, 0.08),
-    0 6px 18px rgba(227, 179, 62, 0.06);
+    0 4px 12px rgba(79, 169, 227, 0.04);
+}
+
+.vote-card__actions
+.btn-secondary:hover {
+  background:
+    var(--gradient-lmsy-soft);
+
+  border-color:
+    rgba(79, 169, 227, 0.20);
+
+  box-shadow:
+    0 6px 16px rgba(79, 169, 227, 0.07),
+    0 6px 16px rgba(227, 179, 62, 0.05);
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* ================================
+   DONATE BUTTON
+================================= */
+
+.vote-card__actions
+.vote-card__donate-button {
+  background:
+    rgba(255, 255, 255, 0.78);
+
+  color:
+    var(--color-text);
+
+  border-color:
+    rgba(79, 169, 227, 0.14);
+
+  box-shadow:
+    0 4px 12px rgba(79, 169, 227, 0.04);
+
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.vote-card__actions
+
+.vote-card__donate-button:hover,
+
+.vote-card__actions
+
+.vote-card__donate-button:active {
+  
+  background:
+    linear-gradient(
+      110deg,
+      #FFF4D6 0%,
+      #FFF8E8 38%,
+      #EEF7F8 62%,
+      #DCEFFA 100%
+    );
+
+  color:
+    var(--color-text);
+
+  border-color:
+    rgba(79, 169, 227, 0.18);
+
+  box-shadow:
+    0 6px 16px rgba(79, 169, 227, 0.08),
+    0 6px 16px rgba(227, 179, 62, 0.06);
+
+  transform:
+    translateY(-1px);
 }
 
 
@@ -1555,6 +1815,185 @@
   color: var(--color-text-soft);
 
   font-size: var(--font-size-base);
+}
+
+/* ================================
+   VOTING CARD ACTIONS
+================================= */
+
+.vote-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  gap: 0.65rem;
+}
+
+.vote-card__actions .btn {
+  flex: 0 0 auto;
+
+  min-width: 108px;
+
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+
+  white-space: nowrap;
+
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+
+/* ================================
+   VOTING CARD BUTTON VARIANTS
+================================= */
+
+
+/* SONYA — PASTEL BLUE */
+
+.vote-card--blue
+.vote-card__actions
+.btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      #E4F3FC 0%,
+      #D4EBF8 100%
+    );
+
+  color: #356E91;
+
+  border-color:
+    rgba(79, 169, 227, 0.18);
+
+  box-shadow:
+    0 5px 14px rgba(79, 169, 227, 0.08);
+}
+
+.vote-card--blue
+.vote-card__actions
+.btn-primary:hover,
+.vote-card--blue
+.vote-card__actions
+.btn-primary:active {
+  background:
+    linear-gradient(
+      135deg,
+      #DCEFFA 0%,
+      #C9E6F6 100%
+    );
+
+  color: #356E91;
+
+  border-color:
+    rgba(79, 169, 227, 0.26);
+
+  box-shadow:
+    0 7px 18px rgba(79, 169, 227, 0.12);
+
+  transform: translateY(-1px);
+}
+
+
+/* LOOKMHEE — PASTEL YELLOW */
+
+.vote-card--yellow
+.vote-card__actions
+.btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      #FFF4CE 0%,
+      #F9E8AE 100%
+    );
+
+  color: #8C6B22;
+
+  border-color:
+    rgba(227, 179, 62, 0.20);
+
+  box-shadow:
+    0 5px 14px rgba(227, 179, 62, 0.08);
+}
+
+.vote-card--yellow
+.vote-card__actions
+.btn-primary:hover,
+.vote-card--yellow
+.vote-card__actions
+.btn-primary:active {
+  background:
+    linear-gradient(
+      135deg,
+      #FDEFC0 0%,
+      #F5E19C 100%
+    );
+
+  color: #80611E;
+
+  border-color:
+    rgba(227, 179, 62, 0.28);
+
+  box-shadow:
+    0 7px 18px rgba(227, 179, 62, 0.12);
+
+  transform: translateY(-1px);
+}
+
+
+/* LMSY — PASTEL YELLOW / BLUE */
+
+.vote-card--lmsy
+.vote-card__actions
+.btn-primary {
+  background:
+    linear-gradient(
+      110deg,
+      #FFF4D6 0%,
+      #FFF8E8 38%,
+      #EEF7F8 62%,
+      #DCEFFA 100%
+    );
+
+  color: #4A4A4F;
+
+  border: 1px solid rgba(79, 169, 227, 0.12);
+
+  box-shadow:
+    0 4px 12px rgba(79, 169, 227, 0.05),
+    0 4px 12px rgba(227, 179, 62, 0.04);
+}
+
+.vote-card--lmsy
+.vote-card__actions
+.btn-primary:hover,
+.vote-card--lmsy
+.vote-card__actions
+.btn-primary:active {
+  background:
+    linear-gradient(
+      110deg,
+      #FCECC0 0%,
+      #FFF4DB 38%,
+      #E7F2F5 62%,
+      #CFE8F7 100%
+    );
+
+  color: #4A4A4F;
+
+  border-color:
+    rgba(79, 169, 227, 0.18);
+
+  box-shadow:
+    0 6px 16px rgba(79, 169, 227, 0.08),
+    0 6px 16px rgba(227, 179, 62, 0.06);
+
+  transform: translateY(-1px);
 }
 
 
@@ -2914,4 +3353,223 @@
 
 .footer__bottom {
   margin-top: 0;
+}
+
+/* ================================
+   DONATION REMINDER MODAL
+================================= */
+
+.donation-reminder {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+}
+
+
+.donation-reminder[hidden] {
+  display: none;
+}
+
+
+.donation-reminder__backdrop {
+  position: absolute;
+  inset: 0;
+
+  background:
+    rgba(20, 20, 24, 0.38);
+
+  backdrop-filter: blur(3px);
+}
+
+
+.donation-reminder__dialog {
+  position: relative;
+  z-index: 1;
+
+  width: min(
+    100%,
+    480px
+  );
+
+  padding:
+    34px 32px 30px;
+
+  background:
+    rgba(255, 255, 255, 0.98);
+
+  border:
+    1px solid
+    rgba(0, 0, 0, 0.08);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 24px 70px
+    rgba(0, 0, 0, 0.18);
+}
+
+
+.donation-reminder__close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background:
+    rgba(0, 0, 0, 0.05);
+
+  color:
+    var(--color-text);
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+
+.donation-reminder__close:hover {
+  background:
+    rgba(0, 0, 0, 0.09);
+}
+
+
+.donation-reminder__title {
+  margin:
+    10px 0 12px;
+
+  font-size:
+    clamp(
+      1.55rem,
+      3vw,
+      1.9rem
+    );
+
+  line-height: 1.15;
+}
+
+
+.donation-reminder__description {
+  margin: 0;
+
+  color:
+    var(--color-text-light);
+
+  line-height: 1.65;
+}
+
+
+.donation-reminder__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 26px;
+}
+
+
+@media (
+  max-width: 520px
+) {
+  .donation-reminder {
+    padding: 18px;
+  }
+
+
+  .donation-reminder__dialog {
+    padding:
+      30px 22px 22px;
+  }
+
+
+  .donation-reminder__actions {
+    flex-direction: column-reverse;
+  }
+
+
+  .donation-reminder__actions
+  .btn {
+    width: 100%;
+  }
+}
+
+/* ================================
+   DONATION REMINDER FORM LINK
+================================= */
+
+.donation-reminder__form-link {
+  color: #c58a00;
+  font-style: italic;
+  font-weight: 700;
+
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+
+  transition:
+    opacity 0.2s ease;
+}
+
+.donation-reminder__form-link:hover {
+  opacity: 0.7;
+}
+
+/* ================================
+   DONATION WARNING TITLES
+================================= */
+
+.donation-reminder__title--warning {
+  color: #b42323;
+}
+
+/* ================================
+   SUBMIT DONATION DETAILS
+================================= */
+
+.support-card__submit-details {
+  background: #ffe8e8;
+  border: 1px solid #efb4b4;
+  color: #b42323;
+  font-weight: 700;
+}
+
+.support-card__submit-details:hover {
+  background: #ffdcdc;
+  border-color: #e89b9b;
+  color: #9f1f1f;
+}
+
+/* ================================
+   SUPPORT DONATION LAYOUT
+================================= */
+
+.support-card__donation {
+  display: flex;
+  width: 100%;
+}
+
+.support-card__donation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.support-card__actions {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.support-card__submit-details {
+  margin-left: auto;
 }
